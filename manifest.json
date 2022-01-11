@@ -1,7 +1,7 @@
 {
   "required_api_version": "^2.0.0",
   "name": "Fuzzy Finder",
-  "description": "Find files in Ulauncher using fzf",
+  "description": "Find files and directories in Ulauncher using fzf",
   "developer_name": "Hillary Chan",
   "icon": "images/icon.png",
   "options": {
@@ -11,7 +11,7 @@
     {
       "id": "kw",
       "type": "keyword",
-      "name": "Fuzzy File Finder",
+      "name": "Fuzzy Finder",
       "default_value": "fzf"
     }
   ]
