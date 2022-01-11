@@ -1,0 +1,31 @@
+name: ulauncher-fzf workflow
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+
+      - name: Setup poetry
+        uses: snok/install-poetry@v1
+
+      - name: Setup just
+        uses: extractions/setup-just@v1
+
+      - name: Install dependencies
+        run: just setup
+
+      - name: Run linter
+        run: just lint
