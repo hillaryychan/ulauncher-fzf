@@ -49,6 +49,12 @@
           "value": 1
         }
       ]
+    },
+    {
+      "id": "base_dir",
+      "type": "input",
+      "name": "Base search directory",
+      "default_value": "~"
     }
   ]
 }
