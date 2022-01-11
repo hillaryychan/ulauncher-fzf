@@ -20,9 +20,34 @@
       "name": "Search type",
       "default_value": 0,
       "options": [
-        { "text": "Both files and directories", "value": 0 },
-        { "text": "Files only", "value": 1 },
-        { "text": "Directories only", "value": 2 }
+        {
+          "text": "Both files and directories",
+          "value": 0
+        },
+        {
+          "text": "Files only",
+          "value": 1
+        },
+        {
+          "text": "Directories only",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "allow_hidden",
+      "type": "select",
+      "name": "Allow hidden files and directories",
+      "default_value": 0,
+      "options": [
+        {
+          "text": "No",
+          "value": 0
+        },
+        {
+          "text": "Yes",
+          "value": 1
+        }
       ]
     }
   ]
