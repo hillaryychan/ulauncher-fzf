@@ -33,6 +33,7 @@ disable= [
     "line-too-long",
     "no-self-use",
     "too-few-public-methods",
+    "too-many-arguments",
     "raise-missing-from",
     "fixme"
 ]
