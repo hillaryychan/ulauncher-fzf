@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+from enum import Enum
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -12,6 +13,12 @@ from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallResultItem
 
 logger = logging.getLogger(__name__)
+
+
+class SearchType(Enum):
+    BOTH = 0
+    FILES = 1
+    DIRS = 2
 
 
 def no_op_result_items(msgs):
@@ -57,10 +64,18 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names, errors
 
-    def search(self, query, fd_bin, fzf_bin):
-        logger.info("Finding results for %s", query)
+    def generate_fd_cmd(self, fd_bin, search_type):
+        cmd = [fd_bin, ".", os.path.expanduser("~")]
+        if search_type == SearchType.FILES:
+            cmd.extend(["--type", "f"])
+        elif search_type == SearchType.DIRS:
+            cmd.extend(["--type", "d"])
+        return cmd
 
-        fd_cmd = [fd_bin, ".", os.path.expanduser("~")]
+    def search(self, query, search_type, fd_bin, fzf_bin):
+        logger.info("Finding %s results for %s", search_type, query)
+
+        fd_cmd = self.generate_fd_cmd(fd_bin, search_type)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
@@ -83,7 +98,8 @@ class KeywordQueryEventListener(EventListener):
             return no_op_result_items(["Enter your search criteria."])
 
         try:
-            results = extension.search(query, **bin_names)
+            pref = int(extension.preferences["search_type"])
+            results = extension.search(query, SearchType(pref), **bin_names)
 
             def create_result_item(filename):
                 return ExtensionSmallResultItem(
