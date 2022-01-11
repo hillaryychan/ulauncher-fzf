@@ -87,7 +87,7 @@ class KeywordQueryEventListener(EventListener):
 
             def create_result_item(filename):
                 return ExtensionSmallResultItem(
-                    icon="images/icon.png",
+                    icon="images/sub-icon.png",
                     name=filename,
                     on_enter=OpenAction(filename),
                 )
