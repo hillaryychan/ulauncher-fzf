@@ -64,18 +64,22 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names, errors
 
-    def generate_fd_cmd(self, fd_bin, search_type):
+    def generate_fd_cmd(self, fd_bin, search_type, allow_hidden):
         cmd = [fd_bin, ".", os.path.expanduser("~")]
         if search_type == SearchType.FILES:
             cmd.extend(["--type", "f"])
         elif search_type == SearchType.DIRS:
             cmd.extend(["--type", "d"])
+
+        if allow_hidden:
+            cmd.extend(["--hidden"])
+
         return cmd
 
-    def search(self, query, search_type, fd_bin, fzf_bin):
+    def search(self, query, search_type, allow_hidden, fd_bin, fzf_bin):
         logger.info("Finding %s results for %s", search_type, query)
 
-        fd_cmd = self.generate_fd_cmd(fd_bin, search_type)
+        fd_cmd = self.generate_fd_cmd(fd_bin, search_type, allow_hidden)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
@@ -98,8 +102,9 @@ class KeywordQueryEventListener(EventListener):
             return no_op_result_items(["Enter your search criteria."])
 
         try:
-            pref = int(extension.preferences["search_type"])
-            results = extension.search(query, SearchType(pref), **bin_names)
+            search_type = SearchType(int(extension.preferences["search_type"]))
+            allow_hidden = bool(extension.preferences["allow_hidden"])
+            results = extension.search(query, search_type, allow_hidden, **bin_names)
 
             def create_result_item(filename):
                 return ExtensionSmallResultItem(
