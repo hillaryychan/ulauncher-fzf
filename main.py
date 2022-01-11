@@ -21,11 +21,6 @@ class SearchType(Enum):
     DIRS = 2
 
 
-class AllowHidden(Enum):
-    NO = 0
-    YES = 1
-
-
 def no_op_result_items(msgs):
     def create_result_item(msg):
         return ExtensionResultItem(
@@ -76,7 +71,7 @@ class FuzzyFinderExtension(Extension):
         elif search_type == SearchType.DIRS:
             cmd.extend(["--type", "d"])
 
-        if allow_hidden == AllowHidden.YES:
+        if allow_hidden:
             cmd.extend(["--hidden"])
 
         return cmd
@@ -107,14 +102,9 @@ class KeywordQueryEventListener(EventListener):
             return no_op_result_items(["Enter your search criteria."])
 
         try:
-            search_type = int(extension.preferences["search_type"])
-            allow_hidden = int(extension.preferences["allow_hidden"])
-            results = extension.search(
-                query,
-                SearchType(search_type),
-                AllowHidden(allow_hidden),
-                **bin_names,
-            )
+            search_type = SearchType(int(extension.preferences["search_type"]))
+            allow_hidden = bool(extension.preferences["allow_hidden"])
+            results = extension.search(query, search_type, allow_hidden, **bin_names)
 
             def create_result_item(filename):
                 return ExtensionSmallResultItem(
