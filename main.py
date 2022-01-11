@@ -32,19 +32,18 @@ class FuzzyFinderExtension(Extension):
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
     def search(self, query):
-        logger.info(f"Finding results for {query}")
+        logger.info("Finding results for %s", query)
 
         fd_cmd = ["fd", ".", os.path.expanduser("~")]
-        fd_proc = subprocess.Popen(fd_cmd, stdout=subprocess.PIPE)
+        with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
+            fzf_cmd = ["fzf", "--filter", query]
+            output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
+            output = output.splitlines()
 
-        fzf_cmd = ["fzf", "--filter", query]
-        output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
-        output = output.splitlines()
+            results = output[:15]
+            logging.info("Found results: %s", results)
 
-        results = output[:15]
-        logging.info(f"Found results: {results}")
-
-        return results
+            return results
 
 
 class KeywordQueryEventListener(EventListener):
@@ -69,9 +68,9 @@ class KeywordQueryEventListener(EventListener):
             failing_cmd = error.cmd[0]
             if failing_cmd == "fzf" and error.returncode == 1:
                 return no_op_result_item("No results found.")
-            else:
-                logger.debug(f"Subprocess {error.cmd} failed with status code {error.returncode}")
-                return no_op_result_item("There was an error running this extension.")
+
+            logger.debug("Subprocess %s failed with status code %s", error.cmd, error.returncode)
+            return no_op_result_item("There was an error running this extension.")
 
 
 if __name__ == "__main__":
