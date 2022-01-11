@@ -21,10 +21,10 @@ class SearchType(Enum):
     DIRS = 2
 
 
-def no_op_result_items(msgs):
+def no_op_result_items(msgs, icon="icon"):
     def create_result_item(msg):
         return ExtensionResultItem(
-            icon="images/icon.png",
+            icon=f"images/{icon}.png",
             name=msg,
             on_enter=DoNothingAction(),
         )
@@ -95,7 +95,7 @@ class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
         bin_names, errors = extension.check_dependencies()
         if errors:
-            return no_op_result_items(errors)
+            return no_op_result_items(errors, "error")
 
         query = event.get_argument()
         if not query:
@@ -103,7 +103,7 @@ class KeywordQueryEventListener(EventListener):
 
         try:
             search_type = SearchType(int(extension.preferences["search_type"]))
-            allow_hidden = bool(extension.preferences["allow_hidden"])
+            allow_hidden = bool(int(extension.preferences["allow_hidden"]))
             results = extension.search(query, search_type, allow_hidden, **bin_names)
 
             def create_result_item(filename):
@@ -121,7 +121,7 @@ class KeywordQueryEventListener(EventListener):
                 return no_op_result_items(["No results found."])
 
             logger.debug("Subprocess %s failed with status code %s", error.cmd, error.returncode)
-            return no_op_result_items(["There was an error running this extension."])
+            return no_op_result_items(["There was an error running this extension."], "error")
 
 
 if __name__ == "__main__":
