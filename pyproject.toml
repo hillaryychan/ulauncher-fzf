@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "ulauncher-fzf"
+version = "0.1.0"
+description = ""
+authors = ["Hillary Chan <hillary.chan91@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.12.2"
+flake8 = "^4.0.1"
+black = "^21.12b0"
+isort = "^5.10.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
