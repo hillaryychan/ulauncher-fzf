@@ -1,7 +1,7 @@
 import logging
-import os
 import subprocess
 from enum import Enum
+from os import path
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -64,8 +64,8 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names, errors
 
-    def generate_fd_cmd(self, fd_bin, search_type, allow_hidden):
-        cmd = [fd_bin, ".", os.path.expanduser("~")]
+    def generate_fd_cmd(self, fd_bin, search_type, allow_hidden, base_dir):
+        cmd = [fd_bin, ".", base_dir]
         if search_type == SearchType.FILES:
             cmd.extend(["--type", "f"])
         elif search_type == SearchType.DIRS:
@@ -76,10 +76,10 @@ class FuzzyFinderExtension(Extension):
 
         return cmd
 
-    def search(self, query, search_type, allow_hidden, fd_bin, fzf_bin):
-        logger.info("Finding %s results for %s", search_type, query)
+    def search(self, query, search_type, allow_hidden, base_dir, fd_bin, fzf_bin):
+        logger.info("Finding %s results for %s in %s", search_type, query, base_dir)
 
-        fd_cmd = self.generate_fd_cmd(fd_bin, search_type, allow_hidden)
+        fd_cmd = self.generate_fd_cmd(fd_bin, search_type, allow_hidden, base_dir)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
@@ -97,14 +97,19 @@ class KeywordQueryEventListener(EventListener):
         if errors:
             return no_op_result_items(errors, "error")
 
+        search_type = SearchType(int(extension.preferences["search_type"]))
+        allow_hidden = bool(int(extension.preferences["allow_hidden"]))
+        base_dir = extension.preferences["base_dir"]
+        expanded_base_dir = path.expanduser(base_dir)
+        if not path.isdir(expanded_base_dir):
+            return no_op_result_items([f"'{base_dir}' is an invalid search directory."], "error")
+
         query = event.get_argument()
         if not query:
             return no_op_result_items(["Enter your search criteria."])
 
         try:
-            search_type = SearchType(int(extension.preferences["search_type"]))
-            allow_hidden = bool(int(extension.preferences["allow_hidden"]))
-            results = extension.search(query, search_type, allow_hidden, **bin_names)
+            results = extension.search(query, search_type, allow_hidden, expanded_base_dir, **bin_names)
 
             def create_result_item(filename):
                 return ExtensionSmallResultItem(
