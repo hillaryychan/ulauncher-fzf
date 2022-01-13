@@ -64,10 +64,29 @@ class FuzzyFinderExtension(Extension):
             errors.append("Missing dependency fzf. Please install fzf.")
         if bin_names.get("fd_bin") is None:
             errors.append("Missing dependency fd. Please install fd.")
-        if len(errors) == 0:
-            errors = None
 
         return bin_names, errors
+
+    def check_preferences(self, preferences):
+        errors = []
+
+        base_dir = preferences["base_dir"]
+        if not path.isdir(path.expanduser(base_dir)):
+            errors.append(f"Base directory '{base_dir}' is not a directory.")
+
+        ignore_file = preferences["ignore_file"]
+        if ignore_file and not path.isfile(path.expanduser(ignore_file)):
+            errors.append(f"Ignore file '{ignore_file}' is not a file.")
+
+        return errors
+
+    def get_preferences(self, input_preferences):
+        preferences = {}
+        preferences["search_type"] = SearchType(int(input_preferences["search_type"]))
+        preferences["allow_hidden"] = bool(int(input_preferences["allow_hidden"]))
+        preferences["base_dir"] = path.expanduser(input_preferences["base_dir"])
+        preferences["ignore_file"] = path.expanduser(input_preferences["ignore_file"])
+        return preferences
 
     def generate_fd_cmd(self, fd_bin, search_type, allow_hidden, base_dir, ignore_file):
         cmd = [fd_bin, ".", base_dir]
@@ -84,10 +103,10 @@ class FuzzyFinderExtension(Extension):
 
         return cmd
 
-    def search(self, query, search_type, allow_hidden, base_dir, ignore_file, fd_bin, fzf_bin):
-        logger.debug("Finding %s results for %s in %s", search_type, query, base_dir)
+    def search(self, query, preferences, fd_bin, fzf_bin):
+        logger.debug("Finding results for %s", query)
 
-        fd_cmd = self.generate_fd_cmd(fd_bin, search_type, allow_hidden, base_dir, ignore_file)
+        fd_cmd = self.generate_fd_cmd(fd_bin, **preferences)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
@@ -102,33 +121,17 @@ class FuzzyFinderExtension(Extension):
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
         bin_names, errors = extension.check_dependencies()
+        errors.extend(extension.check_preferences(extension.preferences))
         if errors:
             return no_op_result_items(errors, "error")
-
-        search_type = SearchType(int(extension.preferences["search_type"]))
-        allow_hidden = bool(int(extension.preferences["allow_hidden"]))
-        base_dir = extension.preferences["base_dir"]
-        expanded_base_dir = path.expanduser(base_dir)
-        if not path.isdir(expanded_base_dir):
-            return no_op_result_items([f"Base directory '{base_dir}' is not a directory."], "error")
-        ignore_file = extension.preferences["ignore_file"]
-        expanded_ignore_file = path.expanduser(ignore_file)
-        if ignore_file and not path.isfile(expanded_ignore_file):
-            return no_op_result_items([f"Ignore file '{ignore_file}' is not a file."], "error")
 
         query = event.get_argument()
         if not query:
             return no_op_result_items(["Enter your search criteria."])
 
         try:
-            results = extension.search(
-                query,
-                search_type,
-                allow_hidden,
-                expanded_base_dir,
-                expanded_ignore_file,
-                **bin_names,
-            )
+            preferences = extension.get_preferences(extension.preferences)
+            results = extension.search(query, preferences, **bin_names)
 
             def create_result_item(filename):
                 return ExtensionSmallResultItem(

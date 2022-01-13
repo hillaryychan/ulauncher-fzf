@@ -19,7 +19,7 @@
       "id": "search_type",
       "type": "select",
       "name": "Search type",
-      "description": "Set what entries should be searched by Fuzzy Finder",
+      "description": "Set what entries Fuzzy Finder should search for.",
       "default_value": 0,
       "options": [
         {
