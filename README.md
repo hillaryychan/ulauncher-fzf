@@ -17,6 +17,14 @@ Find files and directories in Ulauncher using fzf (and fd).
 * Allow hidden files to be searched
 * Specify base directory to be searched
 
+Actions:
+
+* Click or press *Enter* to open
+    * file with default application
+    * directory in your file manager
+* Press *Alt+Enter* to open the directory in which the file is contained.  
+    If the path is a directory, this will be the same as pressing Enter
+
 ## License
 
 This source code is licensed under the [MIT license](LICENSE).

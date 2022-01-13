@@ -21,6 +21,12 @@ class SearchType(Enum):
     DIRS = 2
 
 
+def get_dirname(filename):
+    dirname = filename if path.isdir(filename) else path.dirname(filename)
+    logger.debug(f"Directory path for {filename} is {dirname}")
+    return dirname
+
+
 def no_op_result_items(msgs, icon="icon"):
     def create_result_item(msg):
         return ExtensionResultItem(
@@ -77,7 +83,7 @@ class FuzzyFinderExtension(Extension):
         return cmd
 
     def search(self, query, search_type, allow_hidden, base_dir, fd_bin, fzf_bin):
-        logger.info("Finding %s results for %s in %s", search_type, query, base_dir)
+        logger.debug("Finding %s results for %s in %s", search_type, query, base_dir)
 
         fd_cmd = self.generate_fd_cmd(fd_bin, search_type, allow_hidden, base_dir)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
@@ -86,7 +92,7 @@ class FuzzyFinderExtension(Extension):
             output = output.splitlines()
 
             results = output[:15]
-            logging.info("Found results: %s", results)
+            logger.info("Found results: %s", results)
 
             return results
 
@@ -109,13 +115,16 @@ class KeywordQueryEventListener(EventListener):
             return no_op_result_items(["Enter your search criteria."])
 
         try:
-            results = extension.search(query, search_type, allow_hidden, expanded_base_dir, **bin_names)
+            results = extension.search(
+                query, search_type, allow_hidden, expanded_base_dir, **bin_names
+            )
 
             def create_result_item(filename):
                 return ExtensionSmallResultItem(
                     icon="images/sub-icon.png",
                     name=filename,
                     on_enter=OpenAction(filename),
+                    on_alt_enter=OpenAction(get_dirname(filename)),
                 )
 
             items = list(map(create_result_item, results))
