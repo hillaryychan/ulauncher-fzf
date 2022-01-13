@@ -12,7 +12,6 @@
       "id": "kw",
       "type": "keyword",
       "name": "Fuzzy Finder",
-      "description": "Keyword to launch Fuzzy Finder (default is 'fzf').",
       "default_value": "fzf"
     },
     {
