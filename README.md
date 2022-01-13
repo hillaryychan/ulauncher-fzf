@@ -16,13 +16,14 @@ Find files and directories in Ulauncher using fzf (and fd).
 * Fuzzy searching for files, directories or both
 * Allow hidden files to be searched
 * Specify base directory to be searched
+* Specify path to ignore-file in '.gitignore' format
 
 Actions:
 
-* Click or press *Enter* to open
+* Click or press *"Enter"* to open
     * file with default application
     * directory in your file manager
-* Press *Alt+Enter* to open the directory in which the file is contained.  
+* Press *"Alt+Enter"* to open the directory in which the file is contained.  
     If the path is a directory, this will be the same as pressing Enter
 
 ## License

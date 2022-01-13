@@ -12,6 +12,7 @@
       "id": "kw",
       "type": "keyword",
       "name": "Fuzzy Finder",
+      "description": "Keyword to launch Fuzzy Finder (default is 'fzf').",
       "default_value": "fzf"
     },
     {
@@ -57,7 +58,14 @@
       "type": "input",
       "name": "Base search directory",
       "description": "The base directory to search for files.",
-      "default_value": "~/"
+      "default_value": "~"
+    },
+    {
+      "id": "ignore_file",
+      "type": "input",
+      "name": "Path to ignore-file",
+      "description": "Path to a custom ignore-file in '.gitignore' format for files or directories to ignore.",
+      "default_value": ""
     }
   ]
 }

@@ -23,7 +23,6 @@ class SearchType(Enum):
 
 def get_dirname(filename):
     dirname = filename if path.isdir(filename) else path.dirname(filename)
-    logger.debug("Directory path for %s is %s", filename, dirname)
     return dirname
 
 
@@ -70,7 +69,7 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names, errors
 
-    def generate_fd_cmd(self, fd_bin, search_type, allow_hidden, base_dir):
+    def generate_fd_cmd(self, fd_bin, search_type, allow_hidden, base_dir, ignore_file):
         cmd = [fd_bin, ".", base_dir]
         if search_type == SearchType.FILES:
             cmd.extend(["--type", "f"])
@@ -80,12 +79,15 @@ class FuzzyFinderExtension(Extension):
         if allow_hidden:
             cmd.extend(["--hidden"])
 
+        if ignore_file:
+            cmd.extend(["--ignore-file", ignore_file])
+
         return cmd
 
-    def search(self, query, search_type, allow_hidden, base_dir, fd_bin, fzf_bin):
+    def search(self, query, search_type, allow_hidden, base_dir, ignore_file, fd_bin, fzf_bin):
         logger.debug("Finding %s results for %s in %s", search_type, query, base_dir)
 
-        fd_cmd = self.generate_fd_cmd(fd_bin, search_type, allow_hidden, base_dir)
+        fd_cmd = self.generate_fd_cmd(fd_bin, search_type, allow_hidden, base_dir, ignore_file)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
@@ -108,7 +110,11 @@ class KeywordQueryEventListener(EventListener):
         base_dir = extension.preferences["base_dir"]
         expanded_base_dir = path.expanduser(base_dir)
         if not path.isdir(expanded_base_dir):
-            return no_op_result_items([f"'{base_dir}' is an invalid search directory."], "error")
+            return no_op_result_items([f"Base directory '{base_dir}' is not a directory."], "error")
+        ignore_file = extension.preferences["ignore_file"]
+        expanded_ignore_file = path.expanduser(ignore_file)
+        if ignore_file and not path.isfile(expanded_ignore_file):
+            return no_op_result_items([f"Ignore file '{ignore_file}' is not a file."], "error")
 
         query = event.get_argument()
         if not query:
@@ -116,7 +122,12 @@ class KeywordQueryEventListener(EventListener):
 
         try:
             results = extension.search(
-                query, search_type, allow_hidden, expanded_base_dir, **bin_names
+                query,
+                search_type,
+                allow_hidden,
+                expanded_base_dir,
+                expanded_ignore_file,
+                **bin_names,
             )
 
             def create_result_item(filename):
