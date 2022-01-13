@@ -23,7 +23,7 @@ class SearchType(Enum):
 
 def get_dirname(filename):
     dirname = filename if path.isdir(filename) else path.dirname(filename)
-    logger.debug(f"Directory path for {filename} is {dirname}")
+    logger.debug("Directory path for %s is %s", filename, dirname)
     return dirname
 
 
