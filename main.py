@@ -53,6 +53,7 @@ class FuzzyFinderExtension(Extension):
         return bin_names
 
     def check_dependencies(self):
+        logger.debug("Checking and getting binaries for dependencies")
         bin_names = {}
         bin_names = self.assign_bin_name(bin_names, "fzf_bin", "fzf")
         bin_names = self.assign_bin_name(bin_names, "fd_bin", "fd")
@@ -65,9 +66,13 @@ class FuzzyFinderExtension(Extension):
         if bin_names.get("fd_bin") is None:
             errors.append("Missing dependency fd. Please install fd.")
 
+        if not errors:
+            logger.debug("Using binaries %s", bin_names)
+
         return bin_names, errors
 
     def check_preferences(self, preferences):
+        logger.debug("Checking user preferences are valid")
         errors = []
 
         base_dir = preferences["base_dir"]
@@ -78,6 +83,9 @@ class FuzzyFinderExtension(Extension):
         if ignore_file and not path.isfile(path.expanduser(ignore_file)):
             errors.append(f"Ignore file '{ignore_file}' is not a file.")
 
+        if not errors:
+            logger.debug("User preferences validated")
+
         return errors
 
     def get_preferences(self, input_preferences):
@@ -86,6 +94,9 @@ class FuzzyFinderExtension(Extension):
         preferences["allow_hidden"] = bool(int(input_preferences["allow_hidden"]))
         preferences["base_dir"] = path.expanduser(input_preferences["base_dir"])
         preferences["ignore_file"] = path.expanduser(input_preferences["ignore_file"])
+
+        logger.debug("Using user preferences %s", preferences)
+
         return preferences
 
     def generate_fd_cmd(self, fd_bin, search_type, allow_hidden, base_dir, ignore_file):
