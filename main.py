@@ -45,7 +45,7 @@ class FuzzyFinderExtension(Extension):
 
     def assign_bin_name(self, bin_names, bin_cmd, testing_cmd):
         try:
-            subprocess.check_call(["command", "-v", testing_cmd], stdout=subprocess.DEVNULL)
+            subprocess.check_call(["type", testing_cmd], stdout=subprocess.DEVNULL)
             bin_names[bin_cmd] = testing_cmd
         except subprocess.CalledProcessError:
             pass
