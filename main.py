@@ -1,4 +1,5 @@
 import logging
+import shutil
 import subprocess
 from enum import Enum
 from os import path
@@ -45,8 +46,8 @@ class FuzzyFinderExtension(Extension):
 
     def assign_bin_name(self, bin_names, bin_cmd, testing_cmd):
         try:
-            subprocess.check_call(["command", "-v", testing_cmd], stdout=subprocess.DEVNULL)
-            bin_names[bin_cmd] = testing_cmd
+            if shutil.which(testing_cmd):
+                bin_names[bin_cmd] = testing_cmd
         except subprocess.CalledProcessError:
             pass
 
