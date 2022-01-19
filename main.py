@@ -84,6 +84,13 @@ class FuzzyFinderExtension(Extension):
         if ignore_file and not path.isfile(path.expanduser(ignore_file)):
             errors.append(f"Ignore file '{ignore_file}' is not a file.")
 
+        try:
+            result_limit = int(preferences["result_limit"])
+            if result_limit <= 0:
+                errors.append("Result limit must be greater than 0.")
+        except ValueError:
+            errors.append("Result limit must be an integer.")
+
         if not errors:
             logger.debug("User preferences validated")
 
@@ -93,6 +100,7 @@ class FuzzyFinderExtension(Extension):
         preferences = {}
         preferences["search_type"] = SearchType(int(input_preferences["search_type"]))
         preferences["allow_hidden"] = bool(int(input_preferences["allow_hidden"]))
+        preferences["result_limit"] = int(input_preferences["result_limit"])
         preferences["base_dir"] = path.expanduser(input_preferences["base_dir"])
         preferences["ignore_file"] = path.expanduser(input_preferences["ignore_file"])
 
@@ -100,31 +108,32 @@ class FuzzyFinderExtension(Extension):
 
         return preferences
 
-    def generate_fd_cmd(self, fd_bin, search_type, allow_hidden, base_dir, ignore_file):
-        cmd = [fd_bin, ".", base_dir]
-        if search_type == SearchType.FILES:
+    def generate_fd_cmd(self, fd_bin, preferences):
+        cmd = [fd_bin, ".", preferences["base_dir"]]
+        if preferences["search_type"] == SearchType.FILES:
             cmd.extend(["--type", "f"])
-        elif search_type == SearchType.DIRS:
+        elif preferences["search_type"] == SearchType.DIRS:
             cmd.extend(["--type", "d"])
 
-        if allow_hidden:
+        if preferences["allow_hidden"]:
             cmd.extend(["--hidden"])
 
-        if ignore_file:
-            cmd.extend(["--ignore-file", ignore_file])
+        if preferences["ignore_file"]:
+            cmd.extend(["--ignore-file", preferences["ignore_file"]])
 
         return cmd
 
     def search(self, query, preferences, fd_bin, fzf_bin):
         logger.debug("Finding results for %s", query)
 
-        fd_cmd = self.generate_fd_cmd(fd_bin, **preferences)
+        fd_cmd = self.generate_fd_cmd(fd_bin, preferences)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
             output = output.splitlines()
 
-            results = output[:15]
+            limit = preferences["result_limit"]
+            results = output[:limit]
             logger.info("Found results: %s", results)
 
             return results

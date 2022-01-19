@@ -53,6 +53,13 @@
       ]
     },
     {
+      "id": "result_limit",
+      "type": "input",
+      "name": "Result limit",
+      "description": "Number of results that should be returned.",
+      "default_value": "15"
+    },
+    {
       "id": "base_dir",
       "type": "input",
       "name": "Base search directory",
