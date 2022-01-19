@@ -108,33 +108,32 @@ class FuzzyFinderExtension(Extension):
 
         return preferences
 
-    def generate_fd_cmd(self, fd_bin, search_type, allow_hidden, base_dir, ignore_file):
-        cmd = [fd_bin, ".", base_dir]
-        if search_type == SearchType.FILES:
+    def generate_fd_cmd(self, fd_bin, preferences):
+        cmd = [fd_bin, ".", preferences["base_dir"]]
+        if preferences["search_type"] == SearchType.FILES:
             cmd.extend(["--type", "f"])
-        elif search_type == SearchType.DIRS:
+        elif preferences["search_type"] == SearchType.DIRS:
             cmd.extend(["--type", "d"])
 
-        if allow_hidden:
+        if preferences["allow_hidden"]:
             cmd.extend(["--hidden"])
 
-        if ignore_file:
-            cmd.extend(["--ignore-file", ignore_file])
+        if preferences["ignore_file"]:
+            cmd.extend(["--ignore-file", preferences["ignore_file"]])
 
         return cmd
 
-    def search(
-        self, query, fd_bin, fzf_bin, search_type, allow_hidden, result_limit, base_dir, ignore_file
-    ):
+    def search(self, query, preferences, fd_bin, fzf_bin):
         logger.debug("Finding results for %s", query)
 
-        fd_cmd = self.generate_fd_cmd(fd_bin, search_type, allow_hidden, base_dir, ignore_file)
+        fd_cmd = self.generate_fd_cmd(fd_bin, preferences)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
             output = output.splitlines()
 
-            results = output[:result_limit]
+            limit = preferences["result_limit"]
+            results = output[:limit]
             logger.info("Found results: %s", results)
 
             return results
@@ -153,7 +152,7 @@ class KeywordQueryEventListener(EventListener):
 
         try:
             preferences = extension.get_preferences(extension.preferences)
-            results = extension.search(query, **bin_names, **preferences)
+            results = extension.search(query, preferences, **bin_names)
 
             def create_result_item(filename):
                 return ExtensionSmallResultItem(
