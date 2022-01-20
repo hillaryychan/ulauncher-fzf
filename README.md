@@ -15,6 +15,7 @@ Find files and directories in Ulauncher using fzf (and fd).
 
 * Fuzzy searching for files, directories or both
 * Allow hidden files to be searched
+* Specify preferred number of results returned
 * Specify base directory to be searched
 * Specify path to ignore-file in '.gitignore' format
 
