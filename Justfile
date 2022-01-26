@@ -15,10 +15,13 @@ lint-fix:
 
 link:
   if test -h {{EXT_LOC}}; then just unlink; fi
-  ln -s {{EXT_DIR}} ~/.local/share/ulauncher/extensions/{{EXT_NAME}}
+  ln -s {{EXT_DIR}} {{EXT_LOC}}
 
 unlink:
-  rm ~/.local/share/ulauncher/extensions/{{EXT_NAME}}
+  rm {{EXT_LOC}}
+
+start:
+  ulauncher --dev -v
 
 dev:
-  ulauncher -v --dev
+  ulauncher --no-extensions --dev -v
