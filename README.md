@@ -37,7 +37,8 @@ You can use command runners `make` or [`just`](https://github.com/casey/just) to
     git clone https://github.com/hillaryychan/ulauncher-fzf.git
     ```
 
-2. Install developer dependencies
+2. (Optional) Install developer dependencies.  
+    This is used to install dependencies for running `lint` and `lint-fix`. It will require Python 3.10 and [poetry](https://python-poetry.org/docs/).
 
     ```sh
     make setup
