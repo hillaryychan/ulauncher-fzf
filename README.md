@@ -73,6 +73,10 @@ Full list of targets for the command runners:
 * `start` - run Ulauncher with logging enabled
 * `dev` - run Ulauncher with no extensions and logging enabled
 
+## Contributing
+
+All contributions are welcome. Raise an issue or open a pull request.
+
 ## License
 
 This source code is licensed under the [MIT license](LICENSE).
