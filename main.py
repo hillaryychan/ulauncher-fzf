@@ -15,6 +15,9 @@ from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallRes
 
 logger = logging.getLogger(__name__)
 
+BinNames = dict[str, str]
+ExtensionPreferences = dict[str, str]
+
 
 class SearchType(Enum):
     BOTH = 0
@@ -22,12 +25,12 @@ class SearchType(Enum):
     DIRS = 2
 
 
-def get_dirname(filename):
+def get_dirname(filename: str) -> str:
     dirname = filename if path.isdir(filename) else path.dirname(filename)
     return dirname
 
 
-def no_op_result_items(msgs, icon="icon"):
+def no_op_result_items(msgs: list[str], icon: str = "icon") -> RenderResultListAction:
     def create_result_item(msg):
         return ExtensionResultItem(
             icon=f"images/{icon}.png",
@@ -44,7 +47,7 @@ class FuzzyFinderExtension(Extension):
         super().__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
-    def assign_bin_name(self, bin_names, bin_cmd, testing_cmd):
+    def assign_bin_name(self, bin_names: BinNames, bin_cmd: str, testing_cmd: str) -> BinNames:
         try:
             if shutil.which(testing_cmd):
                 bin_names[bin_cmd] = testing_cmd
@@ -53,7 +56,7 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names
 
-    def check_dependencies(self):
+    def get_binaries(self) -> tuple[BinNames, list[str]]:
         logger.debug("Checking and getting binaries for dependencies")
         bin_names = {}
         bin_names = self.assign_bin_name(bin_names, "fzf_bin", "fzf")
@@ -72,7 +75,7 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names, errors
 
-    def check_preferences(self, preferences):
+    def check_preferences(self, preferences: ExtensionPreferences) -> list[str]:
         logger.debug("Checking user preferences are valid")
         errors = []
 
@@ -96,7 +99,7 @@ class FuzzyFinderExtension(Extension):
 
         return errors
 
-    def get_preferences(self, input_preferences):
+    def get_preferences(self, input_preferences: ExtensionPreferences) -> ExtensionPreferences:
         preferences = {}
         preferences["search_type"] = SearchType(int(input_preferences["search_type"]))
         preferences["allow_hidden"] = bool(int(input_preferences["allow_hidden"]))
@@ -108,7 +111,7 @@ class FuzzyFinderExtension(Extension):
 
         return preferences
 
-    def generate_fd_cmd(self, fd_bin, preferences):
+    def generate_fd_cmd(self, fd_bin: str, preferences: ExtensionPreferences) -> list[str]:
         cmd = [fd_bin, ".", preferences["base_dir"]]
         if preferences["search_type"] == SearchType.FILES:
             cmd.extend(["--type", "f"])
@@ -123,7 +126,9 @@ class FuzzyFinderExtension(Extension):
 
         return cmd
 
-    def search(self, query, preferences, fd_bin, fzf_bin):
+    def search(
+        self, query: str, preferences: ExtensionPreferences, fd_bin: str, fzf_bin: str
+    ) -> list[str]:
         logger.debug("Finding results for %s", query)
 
         fd_cmd = self.generate_fd_cmd(fd_bin, preferences)
@@ -140,8 +145,10 @@ class FuzzyFinderExtension(Extension):
 
 
 class KeywordQueryEventListener(EventListener):
-    def on_event(self, event, extension):
-        bin_names, errors = extension.check_dependencies()
+    def on_event(
+        self, event: KeywordQueryEvent, extension: FuzzyFinderExtension
+    ) -> RenderResultListAction:
+        bin_names, errors = extension.get_binaries()
         errors.extend(extension.check_preferences(extension.preferences))
         if errors:
             return no_op_result_items(errors, "error")
