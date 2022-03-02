@@ -3,6 +3,7 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
+from typing import Dict
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -15,8 +16,8 @@ from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallRes
 
 logger = logging.getLogger(__name__)
 
-BinNames = dict[str, str]
-ExtensionPreferences = dict[str, str]
+BinNames = Dict[str, str]
+ExtensionPreferences = Dict[str, str]
 
 
 class SearchType(Enum):
