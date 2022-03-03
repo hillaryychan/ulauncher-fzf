@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Dict
+from typing import Dict, List
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -31,7 +31,7 @@ def get_dirname(filename: str) -> str:
     return dirname
 
 
-def no_op_result_items(msgs: list[str], icon: str = "icon") -> RenderResultListAction:
+def no_op_result_items(msgs: List[str], icon: str = "icon") -> RenderResultListAction:
     def create_result_item(msg):
         return ExtensionResultItem(
             icon=f"images/{icon}.png",
@@ -57,7 +57,7 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names
 
-    def get_binaries(self) -> tuple[BinNames, list[str]]:
+    def get_binaries(self) -> tuple[BinNames, List[str]]:
         logger.debug("Checking and getting binaries for dependencies")
         bin_names = {}
         bin_names = self.assign_bin_name(bin_names, "fzf_bin", "fzf")
@@ -76,7 +76,7 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names, errors
 
-    def check_preferences(self, preferences: ExtensionPreferences) -> list[str]:
+    def check_preferences(self, preferences: ExtensionPreferences) -> List[str]:
         logger.debug("Checking user preferences are valid")
         errors = []
 
@@ -112,7 +112,7 @@ class FuzzyFinderExtension(Extension):
 
         return preferences
 
-    def generate_fd_cmd(self, fd_bin: str, preferences: ExtensionPreferences) -> list[str]:
+    def generate_fd_cmd(self, fd_bin: str, preferences: ExtensionPreferences) -> List[str]:
         cmd = [fd_bin, ".", preferences["base_dir"]]
         if preferences["search_type"] == SearchType.FILES:
             cmd.extend(["--type", "f"])
@@ -129,7 +129,7 @@ class FuzzyFinderExtension(Extension):
 
     def search(
         self, query: str, preferences: ExtensionPreferences, fd_bin: str, fzf_bin: str
-    ) -> list[str]:
+    ) -> List[str]:
         logger.debug("Finding results for %s", query)
 
         fd_cmd = self.generate_fd_cmd(fd_bin, preferences)
