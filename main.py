@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -57,7 +57,7 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names
 
-    def get_binaries(self) -> tuple[BinNames, List[str]]:
+    def get_binaries(self) -> Tuple[BinNames, List[str]]:
         logger.debug("Checking and getting binaries for dependencies")
         bin_names = {}
         bin_names = self.assign_bin_name(bin_names, "fzf_bin", "fzf")
