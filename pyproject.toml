@@ -26,6 +26,9 @@ line-length = 100
 profile = "black"
 multi_line_output = 3
 
+[tool.mypy]
+ignore_missing_imports = true
+
 [tool.pylint.messages_control]
 disable= [
     "missing-module-docstring",

@@ -14,6 +14,7 @@ setup:
 lint:
   poetry run flake8 main.py
   poetry run pylint main.py
+  poetry run mypy main.py
 
 # Run code formatters and import organisers
 lint-fix:
