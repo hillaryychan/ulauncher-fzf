@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -16,14 +16,16 @@ from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallRes
 
 logger = logging.getLogger(__name__)
 
-BinNames = Dict[str, str]
-ExtensionPreferences = Dict[str, str]
-
 
 class SearchType(Enum):
     BOTH = 0
     FILES = 1
     DIRS = 2
+
+
+BinNames = Dict[str, str]
+ExtensionPreferences = Dict[str, str]
+FuzzyFinderPreferences = Dict[str, Any]
 
 
 def get_dirname(filename: str) -> str:
@@ -59,7 +61,7 @@ class FuzzyFinderExtension(Extension):
 
     def get_binaries(self) -> Tuple[BinNames, List[str]]:
         logger.debug("Checking and getting binaries for dependencies")
-        bin_names = {}
+        bin_names: BinNames = {}
         bin_names = self.assign_bin_name(bin_names, "fzf_bin", "fzf")
         bin_names = self.assign_bin_name(bin_names, "fd_bin", "fd")
         if bin_names.get("fd_bin") is None:
@@ -100,19 +102,20 @@ class FuzzyFinderExtension(Extension):
 
         return errors
 
-    def get_preferences(self, input_preferences: ExtensionPreferences) -> ExtensionPreferences:
-        preferences = {}
-        preferences["search_type"] = SearchType(int(input_preferences["search_type"]))
-        preferences["allow_hidden"] = bool(int(input_preferences["allow_hidden"]))
-        preferences["result_limit"] = int(input_preferences["result_limit"])
-        preferences["base_dir"] = path.expanduser(input_preferences["base_dir"])
-        preferences["ignore_file"] = path.expanduser(input_preferences["ignore_file"])
+    def get_preferences(self, input_preferences: ExtensionPreferences) -> FuzzyFinderPreferences:
+        preferences: FuzzyFinderPreferences = {
+            "search_type": SearchType(int(input_preferences["search_type"])),
+            "allow_hidden": bool(int(input_preferences["allow_hidden"])),
+            "result_limit": int(input_preferences["result_limit"]),
+            "base_dir": path.expanduser(input_preferences["base_dir"]),
+            "ignore_file": path.expanduser(input_preferences["ignore_file"]),
+        }
 
         logger.debug("Using user preferences %s", preferences)
 
         return preferences
 
-    def generate_fd_cmd(self, fd_bin: str, preferences: ExtensionPreferences) -> List[str]:
+    def generate_fd_cmd(self, fd_bin: str, preferences: FuzzyFinderPreferences) -> List[str]:
         cmd = [fd_bin, ".", preferences["base_dir"]]
         if preferences["search_type"] == SearchType.FILES:
             cmd.extend(["--type", "f"])
@@ -128,7 +131,7 @@ class FuzzyFinderExtension(Extension):
         return cmd
 
     def search(
-        self, query: str, preferences: ExtensionPreferences, fd_bin: str, fzf_bin: str
+        self, query: str, preferences: FuzzyFinderPreferences, fd_bin: str, fzf_bin: str
     ) -> List[str]:
         logger.debug("Finding results for %s", query)
 
@@ -136,10 +139,10 @@ class FuzzyFinderExtension(Extension):
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
-            output = output.splitlines()
+            results = output.splitlines()
 
             limit = preferences["result_limit"]
-            results = output[:limit]
+            results = results[:limit]
             logger.info("Found results: %s", results)
 
             return results
