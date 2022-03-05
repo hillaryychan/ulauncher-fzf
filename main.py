@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple, TypedDict
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -25,7 +25,14 @@ class SearchType(Enum):
 
 BinNames = Dict[str, str]
 ExtensionPreferences = Dict[str, str]
-FuzzyFinderPreferences = Dict[str, Any]
+
+
+class FuzzyFinderPreferences(TypedDict):
+    search_type: SearchType
+    allow_hidden: bool
+    result_limit: int
+    base_dir: str
+    ignore_file: str
 
 
 class FuzzyFinderExtension(Extension):
