@@ -8,6 +8,7 @@ setup:
 lint:
 	poetry run flake8 main.py
 	poetry run pylint main.py
+	poetry run mypy main.py
 
 lint-fix:
 	poetry run black main.py
