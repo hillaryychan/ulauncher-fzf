@@ -28,29 +28,13 @@ ExtensionPreferences = Dict[str, str]
 FuzzyFinderPreferences = Dict[str, Any]
 
 
-def get_dirname(filename: str) -> str:
-    dirname = filename if path.isdir(filename) else path.dirname(filename)
-    return dirname
-
-
-def no_op_result_items(msgs: List[str], icon: str = "icon") -> RenderResultListAction:
-    def create_result_item(msg):
-        return ExtensionResultItem(
-            icon=f"images/{icon}.png",
-            name=msg,
-            on_enter=DoNothingAction(),
-        )
-
-    items = list(map(create_result_item, msgs))
-    return RenderResultListAction(items)
-
-
 class FuzzyFinderExtension(Extension):
     def __init__(self):
         super().__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
-    def assign_bin_name(self, bin_names: BinNames, bin_cmd: str, testing_cmd: str) -> BinNames:
+    @staticmethod
+    def assign_bin_name(bin_names: BinNames, bin_cmd: str, testing_cmd: str) -> BinNames:
         try:
             if shutil.which(testing_cmd):
                 bin_names[bin_cmd] = testing_cmd
@@ -59,26 +43,8 @@ class FuzzyFinderExtension(Extension):
 
         return bin_names
 
-    def get_binaries(self) -> Tuple[BinNames, List[str]]:
-        logger.debug("Checking and getting binaries for dependencies")
-        bin_names: BinNames = {}
-        bin_names = self.assign_bin_name(bin_names, "fzf_bin", "fzf")
-        bin_names = self.assign_bin_name(bin_names, "fd_bin", "fd")
-        if bin_names.get("fd_bin") is None:
-            bin_names = self.assign_bin_name(bin_names, "fd_bin", "fdfind")
-
-        errors = []
-        if bin_names.get("fzf_bin") is None:
-            errors.append("Missing dependency fzf. Please install fzf.")
-        if bin_names.get("fd_bin") is None:
-            errors.append("Missing dependency fd. Please install fd.")
-
-        if not errors:
-            logger.debug("Using binaries %s", bin_names)
-
-        return bin_names, errors
-
-    def check_preferences(self, preferences: ExtensionPreferences) -> List[str]:
+    @staticmethod
+    def check_preferences(preferences: ExtensionPreferences) -> List[str]:
         logger.debug("Checking user preferences are valid")
         errors = []
 
@@ -102,7 +68,8 @@ class FuzzyFinderExtension(Extension):
 
         return errors
 
-    def get_preferences(self, input_preferences: ExtensionPreferences) -> FuzzyFinderPreferences:
+    @staticmethod
+    def get_preferences(input_preferences: ExtensionPreferences) -> FuzzyFinderPreferences:
         preferences: FuzzyFinderPreferences = {
             "search_type": SearchType(int(input_preferences["search_type"])),
             "allow_hidden": bool(int(input_preferences["allow_hidden"])),
@@ -115,7 +82,8 @@ class FuzzyFinderExtension(Extension):
 
         return preferences
 
-    def generate_fd_cmd(self, fd_bin: str, preferences: FuzzyFinderPreferences) -> List[str]:
+    @staticmethod
+    def generate_fd_cmd(fd_bin: str, preferences: FuzzyFinderPreferences) -> List[str]:
         cmd = [fd_bin, ".", preferences["base_dir"]]
         if preferences["search_type"] == SearchType.FILES:
             cmd.extend(["--type", "f"])
@@ -129,6 +97,25 @@ class FuzzyFinderExtension(Extension):
             cmd.extend(["--ignore-file", preferences["ignore_file"]])
 
         return cmd
+
+    def get_binaries(self) -> Tuple[BinNames, List[str]]:
+        logger.debug("Checking and getting binaries for dependencies")
+        bin_names: BinNames = {}
+        bin_names = self.assign_bin_name(bin_names, "fzf_bin", "fzf")
+        bin_names = self.assign_bin_name(bin_names, "fd_bin", "fd")
+        if bin_names.get("fd_bin") is None:
+            bin_names = self.assign_bin_name(bin_names, "fd_bin", "fdfind")
+
+        errors = []
+        if bin_names.get("fzf_bin") is None:
+            errors.append("Missing dependency fzf. Please install fzf.")
+        if bin_names.get("fd_bin") is None:
+            errors.append("Missing dependency fd. Please install fd.")
+
+        if not errors:
+            logger.debug("Using binaries %s", bin_names)
+
+        return bin_names, errors
 
     def search(
         self, query: str, preferences: FuzzyFinderPreferences, fd_bin: str, fzf_bin: str
@@ -149,17 +136,34 @@ class FuzzyFinderExtension(Extension):
 
 
 class KeywordQueryEventListener(EventListener):
+    @staticmethod
+    def get_dirname(filename: str) -> str:
+        dirname = filename if path.isdir(filename) else path.dirname(filename)
+        return dirname
+
+    @staticmethod
+    def no_op_result_items(msgs: List[str], icon: str = "icon") -> RenderResultListAction:
+        def create_result_item(msg):
+            return ExtensionResultItem(
+                icon=f"images/{icon}.png",
+                name=msg,
+                on_enter=DoNothingAction(),
+            )
+
+        items = list(map(create_result_item, msgs))
+        return RenderResultListAction(items)
+
     def on_event(
         self, event: KeywordQueryEvent, extension: FuzzyFinderExtension
     ) -> RenderResultListAction:
         bin_names, errors = extension.get_binaries()
         errors.extend(extension.check_preferences(extension.preferences))
         if errors:
-            return no_op_result_items(errors, "error")
+            return self.no_op_result_items(errors, "error")
 
         query = event.get_argument()
         if not query:
-            return no_op_result_items(["Enter your search criteria."])
+            return self.no_op_result_items(["Enter your search criteria."])
 
         try:
             preferences = extension.get_preferences(extension.preferences)
@@ -170,7 +174,7 @@ class KeywordQueryEventListener(EventListener):
                     icon="images/sub-icon.png",
                     name=filename,
                     on_enter=OpenAction(filename),
-                    on_alt_enter=OpenAction(get_dirname(filename)),
+                    on_alt_enter=OpenAction(self.get_dirname(filename)),
                 )
 
             items = list(map(create_result_item, results))
@@ -178,10 +182,10 @@ class KeywordQueryEventListener(EventListener):
         except subprocess.CalledProcessError as error:
             failing_cmd = error.cmd[0]
             if failing_cmd == "fzf" and error.returncode == 1:
-                return no_op_result_items(["No results found."])
+                return self.no_op_result_items(["No results found."])
 
             logger.debug("Subprocess %s failed with status code %s", error.cmd, error.returncode)
-            return no_op_result_items(["There was an error running this extension."], "error")
+            return self.no_op_result_items(["There was an error running this extension."], "error")
 
 
 if __name__ == "__main__":
