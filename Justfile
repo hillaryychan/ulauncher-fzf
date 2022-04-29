@@ -16,8 +16,13 @@ lint:
   poetry run pylint main.py
   poetry run mypy main.py
 
+# Check code formatting and import organising
+format-check:
+  poetry run black --check --diff main.py
+  poetry run isort --check --diff main.py
+
 # Run code formatters and import organisers
-lint-fix:
+format:
   poetry run black main.py
   poetry run isort main.py
 

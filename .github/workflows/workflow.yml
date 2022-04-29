@@ -27,5 +27,8 @@ jobs:
       - name: Install dependencies
         run: just setup
 
+      - name: Run formatter checks
+        run: just format-check
+
       - name: Run linter
         run: just lint
