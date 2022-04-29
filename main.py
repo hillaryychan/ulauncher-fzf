@@ -165,20 +165,10 @@ class KeywordQueryEventListener(EventListener):
         if not query:
             return self.no_op_result_items(["Enter your search criteria."])
 
+        preferences = extension.get_preferences(extension.preferences)
+
         try:
-            preferences = extension.get_preferences(extension.preferences)
             results = extension.search(query, preferences, **bin_names)
-
-            def create_result_item(filename):
-                return ExtensionSmallResultItem(
-                    icon="images/sub-icon.png",
-                    name=filename,
-                    on_enter=OpenAction(filename),
-                    on_alt_enter=OpenAction(self.get_dirname(filename)),
-                )
-
-            items = list(map(create_result_item, results))
-            return RenderResultListAction(items)
         except subprocess.CalledProcessError as error:
             failing_cmd = error.cmd[0]
             if failing_cmd == "fzf" and error.returncode == 1:
@@ -186,6 +176,17 @@ class KeywordQueryEventListener(EventListener):
 
             logger.debug("Subprocess %s failed with status code %s", error.cmd, error.returncode)
             return self.no_op_result_items(["There was an error running this extension."], "error")
+
+        def create_result_item(filename):
+            return ExtensionSmallResultItem(
+                icon="images/sub-icon.png",
+                name=filename,
+                on_enter=OpenAction(filename),
+                on_alt_enter=OpenAction(self.get_dirname(filename)),
+            )
+
+        items = list(map(create_result_item, results))
+        return RenderResultListAction(items)
 
 
 if __name__ == "__main__":
