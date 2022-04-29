@@ -68,8 +68,9 @@ Full list of targets for the command runners:
 
 * `setup` - install developer dependencies
 * `lint` - run code linters
-* `lint-fix` - run code formatters
 * `link` - create symlink to Ulauncher extensions directory
+* `format-check` - run code formatter checks
+* `format` - run code formatters
 * `unlink` - remove symlink created by `link`
 * `start` - run Ulauncher with logging enabled
 * `dev` - run Ulauncher with no extensions and logging enabled
