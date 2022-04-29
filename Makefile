@@ -10,7 +10,11 @@ lint:
 	poetry run pylint main.py
 	poetry run mypy main.py
 
-lint-fix:
+format-check:
+	poetry run black --check --diff main.py
+	poetry run isort --check --diff main.py
+
+format:
 	poetry run black main.py
 	poetry run isort main.py
 
