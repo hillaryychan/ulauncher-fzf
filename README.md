@@ -17,7 +17,7 @@ Find files and directories in Ulauncher using fzf (and fd).
 * Allow hidden files to be searched
 * Specify preferred number of results returned
 * Specify base directory to be searched
-* Specify path to ignore-file in '.gitignore' format
+* Ignore certain files and directories - you can do this by creating an ignore-file which follows the `.gitignore` format, then specify the path to ignore-file in the extension's settings.
 
 Actions:
 
