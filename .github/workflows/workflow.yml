@@ -9,26 +9,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v2
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
-
-      - name: Setup poetry
-        uses: snok/install-poetry@v1
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
 
       - name: Setup just
         uses: extractions/setup-just@v1
 
-      - name: Install dependencies
-        run: just setup
+      - name: Run linter
+        run: just lint
 
       - name: Run formatter checks
         run: just format-check
-
-      - name: Run linter
-        run: just lint

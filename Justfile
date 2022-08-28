@@ -11,18 +11,17 @@ setup:
   poetry install
 
 # Run code linters
-lint:
-  poetry run flake8 main.py
+lint: setup
   poetry run pylint main.py
   poetry run mypy main.py
 
 # Check code formatting and import organising
-format-check:
+format-check: setup
   poetry run black --check --diff main.py
   poetry run isort --check --diff main.py
 
 # Run code formatters and import organisers
-format:
+format: setup
   poetry run black main.py
   poetry run isort main.py
 
@@ -36,9 +35,9 @@ unlink:
   rm {{EXT_LOC}}
 
 # Start Ulauncher in developer and verbose mode
-start:
+start: setup
   ulauncher --dev -v
 
 # Start Ulauncher in developer and verbose mode with no extensions enabled
-dev:
+dev: setup
   ulauncher --no-extensions --dev -v

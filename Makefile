@@ -5,16 +5,15 @@ EXT_DIR  := $(shell pwd)
 setup:
 	poetry install
 
-lint:
-	poetry run flake8 main.py
+lint: setup
 	poetry run pylint main.py
 	poetry run mypy main.py
 
-format-check:
+format-check: setup
 	poetry run black --check --diff main.py
 	poetry run isort --check --diff main.py
 
-format:
+format: setup
 	poetry run black main.py
 	poetry run isort main.py
 
@@ -25,8 +24,8 @@ link:
 unlink:
 	rm ${EXT_LOC}
 
-start:
+start: setup
 	ulauncher --dev -v
 
-dev:
+dev: setup
 	ulauncher --no-extensions --dev -v
