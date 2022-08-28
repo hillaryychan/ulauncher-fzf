@@ -7,7 +7,7 @@ Find files and directories in Ulauncher using fzf (and fd).
 ## Requirements
 
 * Ulauncher
-* Python 3
+* Python 3.7 or higher
 * [fzf](https://github.com/junegunn/fzf)
 * [fd](https://github.com/sharkdp/fd)
 
