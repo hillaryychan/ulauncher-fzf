@@ -6,12 +6,11 @@ authors = ["Hillary Chan <hillary.chan91@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.7.1,<4.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.12.2"
-flake8 = "^4.0.1"
-black = "^21.12b0"
+black = "^22.6.0"
 isort = "^5.10.1"
 mypy = "^0.931"
 
