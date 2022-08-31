@@ -10,15 +10,15 @@ default:
 setup:
   poetry install
 
-# Run code linters
+# Run code linters and formatters
 lint: setup
-  poetry run pylint main.py
-  poetry run mypy main.py
-
-# Check code formatting and import organising
-format-check: setup
-  poetry run black --check --diff main.py
-  poetry run isort --check --diff main.py
+  #!/usr/bin/env bash
+  status=0
+  poetry run black --check --diff main.py || status=$?
+  poetry run isort --check --diff main.py || status=$?
+  poetry run pylint main.py || status=$?
+  poetry run mypy main.py || status=$?
+  exit $status
 
 # Run code formatters and import organisers
 format: setup
