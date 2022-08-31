@@ -30,6 +30,3 @@ jobs:
 
       - name: Run linter
         run: just lint
-
-      - name: Run formatter checks
-        run: just format-check

@@ -5,13 +5,16 @@ EXT_DIR  := $(shell pwd)
 setup:
 	poetry install
 
-lint: setup
+lint-run: setup
+	poetry run black --check --diff main.py
+	poetry run isort --check --diff main.py
 	poetry run pylint main.py
 	poetry run mypy main.py
 
-format-check: setup
-	poetry run black --check --diff main.py
-	poetry run isort --check --diff main.py
+lint:
+	-make lint-run; \
+		status=$$?; \
+		exit $$status
 
 format: setup
 	poetry run black main.py

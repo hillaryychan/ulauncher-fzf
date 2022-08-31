@@ -15,9 +15,10 @@ Find files and directories in Ulauncher using fzf (and fd).
 
 * Fuzzy searching for files, directories or both
 * Allow hidden files to be searched
+* Follow symbolic links
 * Specify preferred number of results returned
 * Specify base directory to be searched
-* Ignore certain files and directories - you can do this by creating an ignore-file which follows the `.gitignore` format, then specify the path to ignore-file in the extension's settings.
+* Ignore certain files and directories - you can do this by creating an ignore-file which follows the [`.gitignore`](https://git-scm.com/docs/gitignore#_pattern_format) format, then specify the path to ignore-file in the extension's settings.
 
 Actions:
 
@@ -31,48 +32,57 @@ Actions:
 
 You can use command runners `make` or [`just`](https://github.com/casey/just) to run project-specific commands. Any `make` target can also be run with `just`. E.g., `make dev` or `just dev`
 
-1. Clone repository
+1. Clone repository.
 
     ```sh
     git clone https://github.com/hillaryychan/ulauncher-fzf.git
     ```
 
-2. (Optional) Install developer dependencies.  
-    This is used to install dependencies for running `lint` and `lint-fix`. It will require Python 3.10 and [poetry](https://python-poetry.org/docs/).
+1. (Optional) Install developer dependencies.  
+    This is used to install dependencies for running `lint` and `format`. It will require Python 3.7 or higher and [poetry](https://python-poetry.org/docs/).
 
     ```sh
     make setup
     ```
 
-3. Create a symlink to the Ulauncher extensions directory
+1. Create a symlink to the Ulauncher extensions directory.
 
     ```sh
     make link
     ```
 
-4. Stop Ulauncher
-5. Run Ulauncher with no extensions and logging enabled
+1. Stop Ulauncher.
+1. Run Ulauncher and the extension.  
+    If don't mind having other extensions running alongside this extension, you can start Ulauncher in developer and verbose mode.
 
     ```sh
-    make dev
+    make start
     ```
 
-6. In a separate terminal, run ulauncher-fzf.  
-    The command to run the extension should be visible in the logging for Step 4. It should look like this:
+    If you would like **only** this extension to run in Ulauncher.
 
-    ```sh
-    VERBOSE=1 ULAUNCHER_WS_API=ws://127.0.0.1:5050/ulauncher-demo PYTHONPATH=/home/username/projects/ulauncher /usr/bin/python /home/username/.local/share/ulauncher/extensions/ulauncher-demo/main.py
-    ```
+    1. Run Ulauncher with no extensions and logging enabled.
+
+        ```sh
+        make dev
+        ```
+
+    1. In a separate terminal, run `ulauncher-fzf`.  
+        The command to run the extension should be visible in the logging for Step 5i. It should look ***like*** this:
+
+        ```sh
+        VERBOSE=1 ULAUNCHER_WS_API=ws://127.0.0.1:5050/ulauncher-demo PYTHONPATH=/home/username/projects/ulauncher /usr/bin/python /home/username/.local/share/ulauncher/extensions/ulauncher-demo/main.py
+        ```
 
 Full list of targets for the command runners:
 
 * `setup` - install developer dependencies
-* `lint` - run code linters
-* `format-check` - run code formatter checks
+* `lint` - run code linters and formatter checks
 * `format` - run code formatters
 * `link` - create symlink to Ulauncher extensions directory
 * `unlink` - remove symlink created by `link`
-* `start` - run Ulauncher with logging enabled
+* `start` - run Ulauncher with logging enabled  
+    **note:** this will also run **all** extensions present in `~/.local/share/ulauncher/extensions/`
 * `dev` - run Ulauncher with no extensions and logging enabled
 
 ## Contributing
