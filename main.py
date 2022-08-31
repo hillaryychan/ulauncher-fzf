@@ -73,6 +73,7 @@ class FuzzyFinderExtension(Extension):
         preferences: FuzzyFinderPreferences = {
             "search_type": SearchType(int(input_preferences["search_type"])),
             "allow_hidden": bool(int(input_preferences["allow_hidden"])),
+            "follow_symlinks": bool(int(input_preferences["follow_symlinks"])),
             "result_limit": int(input_preferences["result_limit"]),
             "base_dir": path.expanduser(input_preferences["base_dir"]),
             "ignore_file": path.expanduser(input_preferences["ignore_file"]),
@@ -92,6 +93,9 @@ class FuzzyFinderExtension(Extension):
 
         if preferences["allow_hidden"]:
             cmd.extend(["--hidden"])
+
+        if preferences["follow_symlinks"]:
+            cmd.extend(["--follow"])
 
         if preferences["ignore_file"]:
             cmd.extend(["--ignore-file", preferences["ignore_file"]])
