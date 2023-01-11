@@ -15,6 +15,23 @@
       "default_value": "fzf"
     },
     {
+      "id": "alt_enter_action",
+      "type": "select",
+      "name": "Alt+Enter action",
+      "description": "Set the preferred behaviour for Alt+Enter.",
+      "default_value": 0,
+      "options": [
+        {
+          "text": "Open path's directory",
+          "value": 0
+        },
+        {
+          "text": "Copy path to clipboard",
+          "value": 1
+        }
+      ]
+    },
+    {
       "id": "search_type",
       "type": "select",
       "name": "Search type",

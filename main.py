@@ -7,6 +7,8 @@ from typing import Any, Dict, List, Tuple
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
+from ulauncher.api.shared.action.BaseAction import BaseAction
+from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 from ulauncher.api.shared.action.OpenAction import OpenAction
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
@@ -15,6 +17,11 @@ from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallResultItem
 
 logger = logging.getLogger(__name__)
+
+
+class AltEnterAction(Enum):
+    OPEN_PATH = 0
+    COPY_PATH = 1
 
 
 class SearchType(Enum):
@@ -71,6 +78,7 @@ class FuzzyFinderExtension(Extension):
     @staticmethod
     def get_preferences(input_preferences: ExtensionPreferences) -> FuzzyFinderPreferences:
         preferences: FuzzyFinderPreferences = {
+            "alt_enter_action": AltEnterAction(int(input_preferences["alt_enter_action"])),
             "search_type": SearchType(int(input_preferences["search_type"])),
             "allow_hidden": bool(int(input_preferences["allow_hidden"])),
             "follow_symlinks": bool(int(input_preferences["follow_symlinks"])),
@@ -141,8 +149,8 @@ class FuzzyFinderExtension(Extension):
 
 class KeywordQueryEventListener(EventListener):
     @staticmethod
-    def get_dirname(filename: str) -> str:
-        dirname = filename if path.isdir(filename) else path.dirname(filename)
+    def get_dirname(path_name: str) -> str:
+        dirname = path_name if path.isdir(path_name) else path.dirname(path_name)
         return dirname
 
     @staticmethod
@@ -156,6 +164,13 @@ class KeywordQueryEventListener(EventListener):
 
         items = list(map(create_result_item, msgs))
         return RenderResultListAction(items)
+
+    def get_alt_enter_action(self, action_type: AltEnterAction, filename: str) -> BaseAction:
+        # Default to opening directory, even if invalid action provided
+        action = OpenAction(self.get_dirname(filename))
+        if action_type == AltEnterAction.COPY_PATH:
+            action = CopyToClipboardAction(filename)
+        return action
 
     def on_event(
         self, event: KeywordQueryEvent, extension: FuzzyFinderExtension
@@ -181,12 +196,12 @@ class KeywordQueryEventListener(EventListener):
             logger.debug("Subprocess %s failed with status code %s", error.cmd, error.returncode)
             return self.no_op_result_items(["There was an error running this extension."], "error")
 
-        def create_result_item(filename: str) -> ExtensionSmallResultItem:
+        def create_result_item(path_name: str) -> ExtensionSmallResultItem:
             return ExtensionSmallResultItem(
                 icon="images/sub-icon.png",
-                name=filename,
-                on_enter=OpenAction(filename),
-                on_alt_enter=OpenAction(self.get_dirname(filename)),
+                name=path_name,
+                on_enter=OpenAction(path_name),
+                on_alt_enter=self.get_alt_enter_action(preferences["alt_enter_action"], path_name),
             )
 
         items = list(map(create_result_item, results))
