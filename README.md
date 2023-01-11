@@ -18,19 +18,24 @@ Find files and directories in Ulauncher using fzf (and fd).
 * Follow symbolic links
 * Specify preferred number of results returned
 * Specify base directory to be searched
-* Ignore certain files and directories - you can do this by creating an ignore-file which follows the [`.gitignore`](https://git-scm.com/docs/gitignore#_pattern_format) format, then specify the path to ignore-file in the extension's settings.
+* Ignore certain files and directories - you can do this by creating an ignore-file
+which follows the [`.gitignore`](https://git-scm.com/docs/gitignore#_pattern_format)
+format, then specify the path to ignore-file in the extension's settings.
 
 Actions:
 
 * Click or press *"Enter"* to open
-    * file with default application
-    * directory in your file manager
-* Press *"Alt+Enter"* to open the directory in which the file is contained.  
-    If the path is a directory, this will be the same as pressing Enter
+    * a file with its default application
+    * a directory in your file manager
+* You can select your preferred action for *"Alt+Enter"*. Actions include:
+    * opening the directory in which the file is contained (default)
+    * copying the file path to your clipboard
 
 ## Development
 
-You can use command runners `make` or [`just`](https://github.com/casey/just) to run project-specific commands. Any `make` target can also be run with `just`. E.g., `make dev` or `just dev`
+You can use command runners `make` or [`just`](https://github.com/casey/just)
+to run project-specific commands. Any `make` target can also be run with `just`.
+E.g., `make dev` or `just dev`
 
 1. Clone repository.
 
@@ -39,7 +44,8 @@ You can use command runners `make` or [`just`](https://github.com/casey/just) to
     ```
 
 1. (Optional) Install developer dependencies.  
-    This is used to install dependencies for running `lint` and `format`. It will require Python 3.7 or higher and [poetry](https://python-poetry.org/docs/).
+    This is used to install dependencies for running `lint` and `format`.
+    It will require Python 3.7 or higher and [poetry](https://python-poetry.org/docs/).
 
     ```sh
     make setup
