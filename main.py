@@ -29,7 +29,7 @@ FuzzyFinderPreferences = Dict[str, Any]
 
 
 class FuzzyFinderExtension(Extension):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
@@ -147,7 +147,7 @@ class KeywordQueryEventListener(EventListener):
 
     @staticmethod
     def no_op_result_items(msgs: List[str], icon: str = "icon") -> RenderResultListAction:
-        def create_result_item(msg):
+        def create_result_item(msg: str) -> ExtensionResultItem:
             return ExtensionResultItem(
                 icon=f"images/{icon}.png",
                 name=msg,
@@ -181,7 +181,7 @@ class KeywordQueryEventListener(EventListener):
             logger.debug("Subprocess %s failed with status code %s", error.cmd, error.returncode)
             return self.no_op_result_items(["There was an error running this extension."], "error")
 
-        def create_result_item(filename):
+        def create_result_item(filename: str) -> ExtensionSmallResultItem:
             return ExtensionSmallResultItem(
                 icon="images/sub-icon.png",
                 name=filename,

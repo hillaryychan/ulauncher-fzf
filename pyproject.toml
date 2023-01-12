@@ -25,7 +25,25 @@ line-length = 100
 profile = "black"
 
 [tool.mypy]
+# Can't import ulauncher when developing
 ignore_missing_imports = true
+
+# Disallow untyped definitions and calls
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+# None and optional handling
+no_implicit_optional = true
+
+# Configuring warnings
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = true
+warn_redundant_casts = true
+warn_unreachable = true
 
 [tool.pylint.messages_control]
 disable= [
