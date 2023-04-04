@@ -106,6 +106,22 @@
       "name": "Path to ignore-file",
       "description": "Path to a custom ignore-file in '.gitignore' format for files or directories to ignore.",
       "default_value": ""
+    },
+    {
+      "id": "match_pattern",
+      "type": "input",
+      "name": "Pattern to match",
+      "description": "Regex pattern to match in file name (useful for stripping common prefixes; Eg: \".*\\\/\").",
+      "default_value": ""
+    },
+    {
+      "id": "match_replacement",
+      "type": "input",
+      "name": "Replacement string",
+      "description": "String to replace if matched.",
+      "default_value": ""
     }
+
+
   ]
 }
