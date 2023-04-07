@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -173,6 +173,36 @@ class KeywordQueryEventListener(EventListener):
             action = CopyToClipboardAction(filename)
         return action
 
+    @staticmethod
+    def _get_display_name(path_name: str, path_prefix: Optional[str] = None) -> str:
+        display_path = path_name
+        if path_prefix is not None:
+            display_path = path_name.replace(path_prefix, "...")
+        return display_path
+
+    def generate_result_items(
+        self, preferences: FuzzyFinderPreferences, results: List[str]
+    ) -> List[ExtensionSmallResultItem]:
+        path_prefix = None
+        common_path = path.commonpath(results)
+        common_path_parent = path.dirname(common_path)
+        if common_path_parent not in ("/", ""):
+            path_prefix = common_path_parent
+
+        logger.debug("path_prefix for results is '%s'", path_prefix or "")
+
+        def create_result_item(path_name: str) -> ExtensionSmallResultItem:
+            return ExtensionSmallResultItem(
+                icon="images/sub-icon.png",
+                name=KeywordQueryEventListener._get_display_name(path_name, path_prefix),
+                on_enter=OpenAction(path_name),
+                on_alt_enter=KeywordQueryEventListener._get_alt_enter_action(
+                    preferences["alt_enter_action"], path_name
+                ),
+            )
+
+        return list(map(create_result_item, results))
+
     def on_event(
         self, event: KeywordQueryEvent, extension: FuzzyFinderExtension
     ) -> RenderResultListAction:
@@ -199,17 +229,8 @@ class KeywordQueryEventListener(EventListener):
                 ["There was an error running this extension."], "error"
             )
 
-        def create_result_item(path_name: str) -> ExtensionSmallResultItem:
-            return ExtensionSmallResultItem(
-                icon="images/sub-icon.png",
-                name=path_name,
-                on_enter=OpenAction(path_name),
-                on_alt_enter=KeywordQueryEventListener._get_alt_enter_action(
-                    preferences["alt_enter_action"], path_name
-                ),
-            )
+        items = self.generate_result_items(preferences, results)
 
-        items = list(map(create_result_item, results))
         return RenderResultListAction(items)
 
 
