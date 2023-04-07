@@ -41,7 +41,7 @@ class FuzzyFinderExtension(Extension):
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
     @staticmethod
-    def assign_bin_name(bin_names: BinNames, bin_cmd: str, testing_cmd: str) -> BinNames:
+    def _assign_bin_name(bin_names: BinNames, bin_cmd: str, testing_cmd: str) -> BinNames:
         try:
             if shutil.which(testing_cmd):
                 bin_names[bin_cmd] = testing_cmd
@@ -92,7 +92,7 @@ class FuzzyFinderExtension(Extension):
         return preferences
 
     @staticmethod
-    def generate_fd_cmd(fd_bin: str, preferences: FuzzyFinderPreferences) -> List[str]:
+    def _generate_fd_cmd(fd_bin: str, preferences: FuzzyFinderPreferences) -> List[str]:
         cmd = [fd_bin, ".", preferences["base_dir"]]
         if preferences["search_type"] == SearchType.FILES:
             cmd.extend(["--type", "f"])
@@ -113,10 +113,10 @@ class FuzzyFinderExtension(Extension):
     def get_binaries(self) -> Tuple[BinNames, List[str]]:
         logger.debug("Checking and getting binaries for dependencies")
         bin_names: BinNames = {}
-        bin_names = self.assign_bin_name(bin_names, "fzf_bin", "fzf")
-        bin_names = self.assign_bin_name(bin_names, "fd_bin", "fd")
+        bin_names = FuzzyFinderExtension._assign_bin_name(bin_names, "fzf_bin", "fzf")
+        bin_names = FuzzyFinderExtension._assign_bin_name(bin_names, "fd_bin", "fd")
         if bin_names.get("fd_bin") is None:
-            bin_names = self.assign_bin_name(bin_names, "fd_bin", "fdfind")
+            bin_names = FuzzyFinderExtension._assign_bin_name(bin_names, "fd_bin", "fdfind")
 
         errors = []
         if bin_names.get("fzf_bin") is None:
@@ -134,7 +134,7 @@ class FuzzyFinderExtension(Extension):
     ) -> List[str]:
         logger.debug("Finding results for %s", query)
 
-        fd_cmd = self.generate_fd_cmd(fd_bin, preferences)
+        fd_cmd = FuzzyFinderExtension._generate_fd_cmd(fd_bin, preferences)
         with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
             fzf_cmd = [fzf_bin, "--filter", query]
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
@@ -149,12 +149,12 @@ class FuzzyFinderExtension(Extension):
 
 class KeywordQueryEventListener(EventListener):
     @staticmethod
-    def get_dirname(path_name: str) -> str:
+    def _get_dirname(path_name: str) -> str:
         dirname = path_name if path.isdir(path_name) else path.dirname(path_name)
         return dirname
 
     @staticmethod
-    def no_op_result_items(msgs: List[str], icon: str = "icon") -> RenderResultListAction:
+    def _no_op_result_items(msgs: List[str], icon: str = "icon") -> RenderResultListAction:
         def create_result_item(msg: str) -> ExtensionResultItem:
             return ExtensionResultItem(
                 icon=f"images/{icon}.png",
@@ -165,9 +165,10 @@ class KeywordQueryEventListener(EventListener):
         items = list(map(create_result_item, msgs))
         return RenderResultListAction(items)
 
-    def get_alt_enter_action(self, action_type: AltEnterAction, filename: str) -> BaseAction:
+    @staticmethod
+    def _get_alt_enter_action(action_type: AltEnterAction, filename: str) -> BaseAction:
         # Default to opening directory, even if invalid action provided
-        action = OpenAction(self.get_dirname(filename))
+        action = OpenAction(KeywordQueryEventListener._get_dirname(filename))
         if action_type == AltEnterAction.COPY_PATH:
             action = CopyToClipboardAction(filename)
         return action
@@ -178,11 +179,11 @@ class KeywordQueryEventListener(EventListener):
         bin_names, errors = extension.get_binaries()
         errors.extend(extension.check_preferences(extension.preferences))
         if errors:
-            return self.no_op_result_items(errors, "error")
+            return KeywordQueryEventListener._no_op_result_items(errors, "error")
 
         query = event.get_argument()
         if not query:
-            return self.no_op_result_items(["Enter your search criteria."])
+            return KeywordQueryEventListener._no_op_result_items(["Enter your search criteria."])
 
         preferences = extension.get_preferences(extension.preferences)
 
@@ -191,17 +192,21 @@ class KeywordQueryEventListener(EventListener):
         except subprocess.CalledProcessError as error:
             failing_cmd = error.cmd[0]
             if failing_cmd == "fzf" and error.returncode == 1:
-                return self.no_op_result_items(["No results found."])
+                return KeywordQueryEventListener._no_op_result_items(["No results found."])
 
             logger.debug("Subprocess %s failed with status code %s", error.cmd, error.returncode)
-            return self.no_op_result_items(["There was an error running this extension."], "error")
+            return KeywordQueryEventListener._no_op_result_items(
+                ["There was an error running this extension."], "error"
+            )
 
         def create_result_item(path_name: str) -> ExtensionSmallResultItem:
             return ExtensionSmallResultItem(
                 icon="images/sub-icon.png",
                 name=path_name,
                 on_enter=OpenAction(path_name),
-                on_alt_enter=self.get_alt_enter_action(preferences["alt_enter_action"], path_name),
+                on_alt_enter=KeywordQueryEventListener._get_alt_enter_action(
+                    preferences["alt_enter_action"], path_name
+                ),
             )
 
         items = list(map(create_result_item, results))
