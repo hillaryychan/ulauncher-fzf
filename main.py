@@ -1,4 +1,5 @@
 import logging
+import re
 import shutil
 import subprocess
 from enum import Enum
@@ -85,6 +86,8 @@ class FuzzyFinderExtension(Extension):
             "result_limit": int(input_preferences["result_limit"]),
             "base_dir": path.expanduser(input_preferences["base_dir"]),
             "ignore_file": path.expanduser(input_preferences["ignore_file"]),
+            "match_pattern": path.expanduser(input_preferences["match_pattern"]),
+            "match_replacement": path.expanduser(input_preferences["match_replacement"]),
         }
 
         logger.debug("Using user preferences %s", preferences)
@@ -202,7 +205,9 @@ class KeywordQueryEventListener(EventListener):
         def create_result_item(path_name: str) -> ExtensionSmallResultItem:
             return ExtensionSmallResultItem(
                 icon="images/sub-icon.png",
-                name=path_name,
+                name=re.sub(
+                    preferences["match_pattern"], preferences["match_replacement"], path_name
+                ),
                 on_enter=OpenAction(path_name),
                 on_alt_enter=KeywordQueryEventListener._get_alt_enter_action(
                     preferences["alt_enter_action"], path_name
