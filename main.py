@@ -82,6 +82,7 @@ class FuzzyFinderExtension(Extension):
             "search_type": SearchType(int(input_preferences["search_type"])),
             "allow_hidden": bool(int(input_preferences["allow_hidden"])),
             "follow_symlinks": bool(int(input_preferences["follow_symlinks"])),
+            "trim_display_path": bool(int(input_preferences["trim_display_path"])),
             "result_limit": int(input_preferences["result_limit"]),
             "base_dir": path.expanduser(input_preferences["base_dir"]),
             "ignore_file": path.expanduser(input_preferences["ignore_file"]),
@@ -174,22 +175,32 @@ class KeywordQueryEventListener(EventListener):
         return action
 
     @staticmethod
+    def _get_path_prefix(results: List[str], trim_path: bool) -> Optional[str]:
+        path_prefix = None
+        if trim_path:
+            common_path = path.commonpath(results)
+            common_path_parent = path.dirname(common_path)
+            if common_path_parent not in ("/", ""):
+                path_prefix = common_path_parent
+
+        logger.debug("path_prefix for results is '%s'", path_prefix or "")
+
+        return path_prefix
+
+    @staticmethod
     def _get_display_name(path_name: str, path_prefix: Optional[str] = None) -> str:
         display_path = path_name
         if path_prefix is not None:
             display_path = path_name.replace(path_prefix, "...")
         return display_path
 
-    def generate_result_items(
-        self, preferences: FuzzyFinderPreferences, results: List[str]
+    @staticmethod
+    def _generate_result_items(
+        preferences: FuzzyFinderPreferences, results: List[str]
     ) -> List[ExtensionSmallResultItem]:
-        path_prefix = None
-        common_path = path.commonpath(results)
-        common_path_parent = path.dirname(common_path)
-        if common_path_parent not in ("/", ""):
-            path_prefix = common_path_parent
-
-        logger.debug("path_prefix for results is '%s'", path_prefix or "")
+        path_prefix = KeywordQueryEventListener._get_path_prefix(
+            results, preferences["trim_display_path"]
+        )
 
         def create_result_item(path_name: str) -> ExtensionSmallResultItem:
             return ExtensionSmallResultItem(
@@ -229,7 +240,7 @@ class KeywordQueryEventListener(EventListener):
                 ["There was an error running this extension."], "error"
             )
 
-        items = self.generate_result_items(preferences, results)
+        items = KeywordQueryEventListener._generate_result_items(preferences, results)
 
         return RenderResultListAction(items)
 
