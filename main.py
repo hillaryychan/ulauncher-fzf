@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -82,6 +82,7 @@ class FuzzyFinderExtension(Extension):
             "search_type": SearchType(int(input_preferences["search_type"])),
             "allow_hidden": bool(int(input_preferences["allow_hidden"])),
             "follow_symlinks": bool(int(input_preferences["follow_symlinks"])),
+            "trim_display_path": bool(int(input_preferences["trim_display_path"])),
             "result_limit": int(input_preferences["result_limit"]),
             "base_dir": path.expanduser(input_preferences["base_dir"]),
             "ignore_file": path.expanduser(input_preferences["ignore_file"]),
@@ -173,6 +174,46 @@ class KeywordQueryEventListener(EventListener):
             action = CopyToClipboardAction(filename)
         return action
 
+    @staticmethod
+    def _get_path_prefix(results: List[str], trim_path: bool) -> Optional[str]:
+        path_prefix = None
+        if trim_path:
+            common_path = path.commonpath(results)
+            common_path_parent = path.dirname(common_path)
+            if common_path_parent not in ("/", ""):
+                path_prefix = common_path_parent
+
+        logger.debug("path_prefix for results is '%s'", path_prefix or "")
+
+        return path_prefix
+
+    @staticmethod
+    def _get_display_name(path_name: str, path_prefix: Optional[str] = None) -> str:
+        display_path = path_name
+        if path_prefix is not None:
+            display_path = path_name.replace(path_prefix, "...")
+        return display_path
+
+    @staticmethod
+    def _generate_result_items(
+        preferences: FuzzyFinderPreferences, results: List[str]
+    ) -> List[ExtensionSmallResultItem]:
+        path_prefix = KeywordQueryEventListener._get_path_prefix(
+            results, preferences["trim_display_path"]
+        )
+
+        def create_result_item(path_name: str) -> ExtensionSmallResultItem:
+            return ExtensionSmallResultItem(
+                icon="images/sub-icon.png",
+                name=KeywordQueryEventListener._get_display_name(path_name, path_prefix),
+                on_enter=OpenAction(path_name),
+                on_alt_enter=KeywordQueryEventListener._get_alt_enter_action(
+                    preferences["alt_enter_action"], path_name
+                ),
+            )
+
+        return list(map(create_result_item, results))
+
     def on_event(
         self, event: KeywordQueryEvent, extension: FuzzyFinderExtension
     ) -> RenderResultListAction:
@@ -199,17 +240,8 @@ class KeywordQueryEventListener(EventListener):
                 ["There was an error running this extension."], "error"
             )
 
-        def create_result_item(path_name: str) -> ExtensionSmallResultItem:
-            return ExtensionSmallResultItem(
-                icon="images/sub-icon.png",
-                name=path_name,
-                on_enter=OpenAction(path_name),
-                on_alt_enter=KeywordQueryEventListener._get_alt_enter_action(
-                    preferences["alt_enter_action"], path_name
-                ),
-            )
+        items = KeywordQueryEventListener._generate_result_items(preferences, results)
 
-        items = list(map(create_result_item, results))
         return RenderResultListAction(items)
 
 
