@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import logging
 import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Any, Optional
+from typing import Any
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -185,7 +187,7 @@ class KeywordQueryEventListener(EventListener):
         return action
 
     @staticmethod
-    def _get_path_prefix(results: list[str], trim_path: bool) -> Optional[str]:
+    def _get_path_prefix(results: list[str], trim_path: bool) -> str | None:
         path_prefix = None
         if trim_path:
             common_path = path.commonpath(results)
@@ -198,7 +200,7 @@ class KeywordQueryEventListener(EventListener):
         return path_prefix
 
     @staticmethod
-    def _get_display_name(path_name: str, path_prefix: Optional[str] = None) -> str:
+    def _get_display_name(path_name: str, path_prefix: str | None = None) -> str:
         display_path = path_name
         if path_prefix is not None:
             display_path = path_name.replace(path_prefix, "...")
