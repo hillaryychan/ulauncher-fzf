@@ -164,7 +164,7 @@ class FuzzyFinderExtension(Extension):
 class KeywordQueryEventListener(EventListener):
     @staticmethod
     def _get_dirname(path_name: str) -> str:
-        return path_name if Path(path_name).is_dir() else path.dirname(path_name)
+        return path_name if Path(path_name).is_dir() else str(Path(path_name).parent)
 
     @staticmethod
     def _no_op_result_items(
@@ -193,7 +193,7 @@ class KeywordQueryEventListener(EventListener):
         path_prefix = None
         if trim_path:
             common_path = path.commonpath(results)
-            common_path_parent = path.dirname(common_path)
+            common_path_parent = str(Path(common_path).parent)
             if common_path_parent not in ("/", ""):
                 path_prefix = common_path_parent
 
