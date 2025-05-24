@@ -41,7 +41,9 @@ class FuzzyFinderExtension(Extension):
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
     @staticmethod
-    def _assign_bin_name(bin_names: BinNames, bin_cmd: str, testing_cmd: str) -> BinNames:
+    def _assign_bin_name(
+        bin_names: BinNames, bin_cmd: str, testing_cmd: str
+    ) -> BinNames:
         try:
             if shutil.which(testing_cmd):
                 bin_names[bin_cmd] = testing_cmd
@@ -76,9 +78,13 @@ class FuzzyFinderExtension(Extension):
         return errors
 
     @staticmethod
-    def get_preferences(input_preferences: ExtensionPreferences) -> FuzzyFinderPreferences:
+    def get_preferences(
+        input_preferences: ExtensionPreferences,
+    ) -> FuzzyFinderPreferences:
         preferences: FuzzyFinderPreferences = {
-            "alt_enter_action": AltEnterAction(int(input_preferences["alt_enter_action"])),
+            "alt_enter_action": AltEnterAction(
+                int(input_preferences["alt_enter_action"])
+            ),
             "search_type": SearchType(int(input_preferences["search_type"])),
             "allow_hidden": bool(int(input_preferences["allow_hidden"])),
             "follow_symlinks": bool(int(input_preferences["follow_symlinks"])),
@@ -117,7 +123,9 @@ class FuzzyFinderExtension(Extension):
         bin_names = FuzzyFinderExtension._assign_bin_name(bin_names, "fzf_bin", "fzf")
         bin_names = FuzzyFinderExtension._assign_bin_name(bin_names, "fd_bin", "fd")
         if bin_names.get("fd_bin") is None:
-            bin_names = FuzzyFinderExtension._assign_bin_name(bin_names, "fd_bin", "fdfind")
+            bin_names = FuzzyFinderExtension._assign_bin_name(
+                bin_names, "fd_bin", "fdfind"
+            )
 
         errors = []
         if bin_names.get("fzf_bin") is None:
@@ -155,7 +163,9 @@ class KeywordQueryEventListener(EventListener):
         return dirname
 
     @staticmethod
-    def _no_op_result_items(msgs: List[str], icon: str = "icon") -> RenderResultListAction:
+    def _no_op_result_items(
+        msgs: List[str], icon: str = "icon"
+    ) -> RenderResultListAction:
         def create_result_item(msg: str) -> ExtensionResultItem:
             return ExtensionResultItem(
                 icon=f"images/{icon}.png",
@@ -205,7 +215,9 @@ class KeywordQueryEventListener(EventListener):
         def create_result_item(path_name: str) -> ExtensionSmallResultItem:
             return ExtensionSmallResultItem(
                 icon="images/sub-icon.png",
-                name=KeywordQueryEventListener._get_display_name(path_name, path_prefix),
+                name=KeywordQueryEventListener._get_display_name(
+                    path_name, path_prefix
+                ),
                 on_enter=OpenAction(path_name),
                 on_alt_enter=KeywordQueryEventListener._get_alt_enter_action(
                     preferences["alt_enter_action"], path_name
@@ -224,7 +236,9 @@ class KeywordQueryEventListener(EventListener):
 
         query = event.get_argument()
         if not query:
-            return KeywordQueryEventListener._no_op_result_items(["Enter your search criteria."])
+            return KeywordQueryEventListener._no_op_result_items(
+                ["Enter your search criteria."]
+            )
 
         preferences = extension.get_preferences(extension.preferences)
 
@@ -233,9 +247,13 @@ class KeywordQueryEventListener(EventListener):
         except subprocess.CalledProcessError as error:
             failing_cmd = error.cmd[0]
             if failing_cmd == "fzf" and error.returncode == 1:
-                return KeywordQueryEventListener._no_op_result_items(["No results found."])
+                return KeywordQueryEventListener._no_op_result_items(
+                    ["No results found."]
+                )
 
-            logger.debug("Subprocess %s failed with status code %s", error.cmd, error.returncode)
+            logger.debug(
+                "Subprocess %s failed with status code %s", error.cmd, error.returncode
+            )
             return KeywordQueryEventListener._no_op_result_items(
                 ["There was an error running this extension."], "error"
             )
