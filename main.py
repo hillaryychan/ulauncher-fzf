@@ -58,8 +58,8 @@ class FuzzyFinderExtension(Extension):
         return bin_names
 
     @staticmethod
-    def check_preferences(preferences: ExtensionPreferences) -> list[str]:
-        logger.debug("Checking user preferences are valid")
+    def _validate_preferences(preferences: ExtensionPreferences) -> list[str]:
+        logger.debug("Validating user preferences")
         errors = []
 
         base_dir = preferences["base_dir"]
@@ -85,7 +85,7 @@ class FuzzyFinderExtension(Extension):
     @staticmethod
     def get_preferences(
         input_preferences: ExtensionPreferences,
-    ) -> FuzzyFinderPreferences:
+    ) -> tuple[FuzzyFinderPreferences, list[str]]:
         preferences: FuzzyFinderPreferences = {
             "alt_enter_action": AltEnterAction(
                 int(input_preferences["alt_enter_action"])
@@ -99,9 +99,9 @@ class FuzzyFinderExtension(Extension):
             "ignore_file": str(Path(input_preferences["ignore_file"]).expanduser()),
         }
 
-        logger.debug("Using user preferences %s", preferences)
+        errors = FuzzyFinderExtension._validate_preferences(preferences)
 
-        return preferences
+        return preferences, errors
 
     @staticmethod
     def _generate_fd_cmd(fd_bin: str, preferences: FuzzyFinderPreferences) -> list[str]:
@@ -233,11 +233,13 @@ class KeywordQueryEventListener(EventListener):
     def on_event(
         self, event: KeywordQueryEvent, extension: FuzzyFinderExtension
     ) -> RenderResultListAction:
-        bin_names, errors = extension.get_binaries()
-        preferences = extension.get_preferences(extension.preferences)
-        errors.extend(extension.check_preferences(preferences))
+        bin_names, bin_errors = extension.get_binaries()
+        preferences, pref_errors = extension.get_preferences(extension.preferences)
+        errors = bin_errors + pref_errors
         if errors:
             return KeywordQueryEventListener._no_op_result_items(errors, "error")
+
+        logger.debug("Using user preferences %s", preferences)
 
         query = event.get_argument()
         if not query:
