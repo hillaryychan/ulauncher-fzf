@@ -54,9 +54,6 @@ ignore = [
     "D105",
     "D106",
     "D107",
-
-    # TODO
-    "PTH",
 ]
 
 [tool.ruff.lint.pydocstyle]

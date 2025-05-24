@@ -5,6 +5,7 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ulauncher.api.client.EventListener import EventListener
@@ -62,11 +63,11 @@ class FuzzyFinderExtension(Extension):
         errors = []
 
         base_dir = preferences["base_dir"]
-        if not path.isdir(path.expanduser(base_dir)):
+        if not Path(Path(base_dir).expanduser()).is_dir():
             errors.append(f"Base directory '{base_dir}' is not a directory.")
 
         ignore_file = preferences["ignore_file"]
-        if ignore_file and not path.isfile(path.expanduser(ignore_file)):
+        if ignore_file and not Path(Path(ignore_file).expanduser()).is_file():
             errors.append(f"Ignore file '{ignore_file}' is not a file.")
 
         try:
@@ -94,8 +95,8 @@ class FuzzyFinderExtension(Extension):
             "follow_symlinks": bool(int(input_preferences["follow_symlinks"])),
             "trim_display_path": bool(int(input_preferences["trim_display_path"])),
             "result_limit": int(input_preferences["result_limit"]),
-            "base_dir": path.expanduser(input_preferences["base_dir"]),
-            "ignore_file": path.expanduser(input_preferences["ignore_file"]),
+            "base_dir": str(Path(input_preferences["base_dir"]).expanduser()),
+            "ignore_file": str(Path(input_preferences["ignore_file"]).expanduser()),
         }
 
         logger.debug("Using user preferences %s", preferences)
@@ -163,7 +164,7 @@ class FuzzyFinderExtension(Extension):
 class KeywordQueryEventListener(EventListener):
     @staticmethod
     def _get_dirname(path_name: str) -> str:
-        return path_name if path.isdir(path_name) else path.dirname(path_name)
+        return path_name if Path(path_name).is_dir() else str(Path(path_name).parent)
 
     @staticmethod
     def _no_op_result_items(
@@ -192,7 +193,7 @@ class KeywordQueryEventListener(EventListener):
         path_prefix = None
         if trim_path:
             common_path = path.commonpath(results)
-            common_path_parent = path.dirname(common_path)
+            common_path_parent = str(Path(common_path).parent)
             if common_path_parent not in ("/", ""):
                 path_prefix = common_path_parent
 
