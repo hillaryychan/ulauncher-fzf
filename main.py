@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 import logging
 import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
-from ulauncher.api.shared.action.BaseAction import BaseAction
 from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 from ulauncher.api.shared.action.OpenAction import OpenAction
@@ -15,6 +16,9 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.event import KeywordQueryEvent
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallResultItem
+
+if TYPE_CHECKING:
+    from ulauncher.api.shared.action.BaseAction import BaseAction
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +34,9 @@ class SearchType(Enum):
     DIRS = 2
 
 
-BinNames = Dict[str, str]
-ExtensionPreferences = Dict[str, str]
-FuzzyFinderPreferences = Dict[str, Any]
+BinNames = dict[str, str]
+ExtensionPreferences = dict[str, str]
+FuzzyFinderPreferences = dict[str, Any]
 
 
 class FuzzyFinderExtension(Extension):
@@ -53,7 +57,7 @@ class FuzzyFinderExtension(Extension):
         return bin_names
 
     @staticmethod
-    def check_preferences(preferences: ExtensionPreferences) -> List[str]:
+    def check_preferences(preferences: ExtensionPreferences) -> list[str]:
         logger.debug("Checking user preferences are valid")
         errors = []
 
@@ -99,7 +103,7 @@ class FuzzyFinderExtension(Extension):
         return preferences
 
     @staticmethod
-    def _generate_fd_cmd(fd_bin: str, preferences: FuzzyFinderPreferences) -> List[str]:
+    def _generate_fd_cmd(fd_bin: str, preferences: FuzzyFinderPreferences) -> list[str]:
         cmd = [fd_bin, ".", preferences["base_dir"]]
         if preferences["search_type"] == SearchType.FILES:
             cmd.extend(["--type", "f"])
@@ -117,7 +121,7 @@ class FuzzyFinderExtension(Extension):
 
         return cmd
 
-    def get_binaries(self) -> Tuple[BinNames, List[str]]:
+    def get_binaries(self) -> tuple[BinNames, list[str]]:
         logger.debug("Checking and getting binaries for dependencies")
         bin_names: BinNames = {}
         bin_names = FuzzyFinderExtension._assign_bin_name(bin_names, "fzf_bin", "fzf")
@@ -140,7 +144,7 @@ class FuzzyFinderExtension(Extension):
 
     def search(
         self, query: str, preferences: FuzzyFinderPreferences, fd_bin: str, fzf_bin: str
-    ) -> List[str]:
+    ) -> list[str]:
         logger.debug("Finding results for %s", query)
 
         fd_cmd = FuzzyFinderExtension._generate_fd_cmd(fd_bin, preferences)
@@ -159,12 +163,11 @@ class FuzzyFinderExtension(Extension):
 class KeywordQueryEventListener(EventListener):
     @staticmethod
     def _get_dirname(path_name: str) -> str:
-        dirname = path_name if path.isdir(path_name) else path.dirname(path_name)
-        return dirname
+        return path_name if path.isdir(path_name) else path.dirname(path_name)
 
     @staticmethod
     def _no_op_result_items(
-        msgs: List[str], icon: str = "icon"
+        msgs: list[str], icon: str = "icon"
     ) -> RenderResultListAction:
         def create_result_item(msg: str) -> ExtensionResultItem:
             return ExtensionResultItem(
@@ -185,7 +188,7 @@ class KeywordQueryEventListener(EventListener):
         return action
 
     @staticmethod
-    def _get_path_prefix(results: List[str], trim_path: bool) -> Optional[str]:
+    def _get_path_prefix(results: list[str], trim_path: bool) -> str | None:
         path_prefix = None
         if trim_path:
             common_path = path.commonpath(results)
@@ -198,7 +201,7 @@ class KeywordQueryEventListener(EventListener):
         return path_prefix
 
     @staticmethod
-    def _get_display_name(path_name: str, path_prefix: Optional[str] = None) -> str:
+    def _get_display_name(path_name: str, path_prefix: str | None = None) -> str:
         display_path = path_name
         if path_prefix is not None:
             display_path = path_name.replace(path_prefix, "...")
@@ -206,8 +209,8 @@ class KeywordQueryEventListener(EventListener):
 
     @staticmethod
     def _generate_result_items(
-        preferences: FuzzyFinderPreferences, results: List[str]
-    ) -> List[ExtensionSmallResultItem]:
+        preferences: FuzzyFinderPreferences, results: list[str]
+    ) -> list[ExtensionSmallResultItem]:
         path_prefix = KeywordQueryEventListener._get_path_prefix(
             results, preferences["trim_display_path"]
         )

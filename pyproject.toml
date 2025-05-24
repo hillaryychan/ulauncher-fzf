@@ -15,12 +15,6 @@ dev = [
 [tool.uv]
 package = false
 
-[tool.black]
-line-length = 100
-
-[tool.isort]
-profile = "black"
-
 [tool.mypy]
 # Can't import ulauncher when developing
 ignore_missing_imports = true
@@ -42,18 +36,30 @@ warn_return_any = true
 warn_redundant_casts = true
 warn_unreachable = true
 
-[tool.pylint.messages_control]
-disable= [
-    "missing-module-docstring",
-    "missing-class-docstring",
-    "missing-function-docstring",
-    "line-too-long",
-    "no-self-use",
-    "too-few-public-methods",
-    "too-many-arguments",
-    "raise-missing-from",
-    "fixme"
+[tool.ruff]
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN401", # any-type
+    "COM812", # missing-trailing-comma (avoid unexpected behaviour with formatter)
+
+    # Disable rules related to missing docstrings
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+
+    # TODO
+    "FBT001",
+    "PTH",
+    "S",
 ]
 
-[tool.pylint.typecheck]
-ignored-modules="ulauncher"
+[tool.ruff.lint.pydocstyle]
+convention= "google"
