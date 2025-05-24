@@ -5,11 +5,10 @@ import shutil
 import subprocess
 from enum import Enum
 from os import path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
-from ulauncher.api.shared.action.BaseAction import BaseAction
 from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 from ulauncher.api.shared.action.OpenAction import OpenAction
@@ -17,6 +16,9 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.event import KeywordQueryEvent
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallResultItem
+
+if TYPE_CHECKING:
+    from ulauncher.api.shared.action.BaseAction import BaseAction
 
 logger = logging.getLogger(__name__)
 
@@ -161,8 +163,7 @@ class FuzzyFinderExtension(Extension):
 class KeywordQueryEventListener(EventListener):
     @staticmethod
     def _get_dirname(path_name: str) -> str:
-        dirname = path_name if path.isdir(path_name) else path.dirname(path_name)
-        return dirname
+        return path_name if path.isdir(path_name) else path.dirname(path_name)
 
     @staticmethod
     def _no_op_result_items(
