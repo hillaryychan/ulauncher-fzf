@@ -188,7 +188,7 @@ class KeywordQueryEventListener(EventListener):
         return action
 
     @staticmethod
-    def _get_path_prefix(results: list[str], trim_path: bool) -> str | None:
+    def _get_path_prefix(results: list[str], trim_path: bool) -> str | None:  # noqa: FBT001
         path_prefix = None
         if trim_path:
             common_path = path.commonpath(results)
