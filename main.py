@@ -67,7 +67,7 @@ class FuzzyFinderExtension(Extension):
             errors.append(f"Base directory '{base_dir}' is not a directory.")
 
         ignore_file = preferences["ignore_file"]
-        if ignore_file and not path.isfile(Path(ignore_file).expanduser()):
+        if ignore_file and not Path(Path(ignore_file).expanduser()).is_file():
             errors.append(f"Ignore file '{ignore_file}' is not a file.")
 
         try:
