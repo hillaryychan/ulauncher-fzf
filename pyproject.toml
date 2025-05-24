@@ -1,22 +1,19 @@
-[tool.poetry]
+[project]
 name = "ulauncher-fzf"
 version = "0.1.0"
 description = ""
-authors = ["Hillary Chan <hillary.chan91@gmail.com>"]
+authors = [{ name = "Hillary Chan", email = "hillary.chan91@gmail.com" }]
+requires-python = ">=3.7.1,<4.0"
 license = "MIT"
+dependencies = []
 
-[tool.poetry.dependencies]
-python = ">=3.7.1,<4.0"
-
-[tool.poetry.dev-dependencies]
-pylint = "^2.12.2"
-black = "^22.6.0"
-isort = "^5.10.1"
-mypy = "^0.931"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "pylint>=2.12.2,<3",
+    "black>=22.6.0,<23",
+    "isort>=5.10.1,<6",
+    "mypy>=0.931,<0.932",
+]
 
 [tool.black]
 line-length = 100

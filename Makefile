@@ -3,13 +3,13 @@ EXT_LOC  := "${HOME}/.local/share/ulauncher/extensions/${EXT_NAME}"
 EXT_DIR  := $(shell pwd)
 
 setup:
-	poetry install
+	uv sync
 
 lint-run: setup
-	poetry run black --check --diff main.py
-	poetry run isort --check --diff main.py
-	poetry run pylint main.py
-	poetry run mypy main.py
+	uv run black --check --diff main.py
+	uv run isort --check --diff main.py
+	uv run pylint main.py
+	uv run mypy main.py
 
 lint:
 	-make lint-run; \
@@ -17,8 +17,8 @@ lint:
 		exit $$status
 
 format: setup
-	poetry run black main.py
-	poetry run isort main.py
+	uv run black main.py
+	uv run isort main.py
 
 link:
 	if test -h ${EXT_LOC}; then make unlink; fi
