@@ -25,8 +25,5 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'
 
-      - name: Setup just
-        uses: extractions/setup-just@v1
-
       - name: Run linter
-        run: just lint
+        run: make lint
