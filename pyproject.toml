@@ -4,15 +4,14 @@ version = "0.1.0"
 description = ""
 authors = ["Hillary Chan <hillary.chan91@gmail.com>"]
 license = "MIT"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.7.1,<4.0"
+python = ">=3.9,<4.0"
 
-[tool.poetry.dev-dependencies]
-pylint = "^2.12.2"
-black = "^22.6.0"
-isort = "^5.10.1"
+[tool.poetry.group.dev.dependencies]
 mypy = "^0.931"
+ruff = "^0.11.11"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

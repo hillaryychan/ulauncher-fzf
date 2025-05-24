@@ -14,16 +14,15 @@ setup:
 lint: setup
   #!/usr/bin/env bash
   status=0
-  poetry run black --check --diff main.py || status=$?
-  poetry run isort --check --diff main.py || status=$?
-  poetry run pylint main.py || status=$?
+  poetry run ruff check main.py
+  poetry run ruff format --check --diff main.py
   poetry run mypy main.py || status=$?
   exit $status
 
 # Run code formatters and import organisers
 format: setup
-  poetry run black main.py
-  poetry run isort main.py
+  poetry run ruff format main.py
+  poetry run ruff check --select I --fix
 
 # Create symbolic link to Ulauncher's extension directory
 link:

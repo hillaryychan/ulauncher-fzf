@@ -6,9 +6,8 @@ setup:
 	poetry install
 
 lint-run: setup
-	poetry run black --check --diff main.py
-	poetry run isort --check --diff main.py
-	poetry run pylint main.py
+	poetry run ruff check main.py
+	poetry run ruff format --check --diff main.py
 	poetry run mypy main.py
 
 lint:
@@ -17,8 +16,8 @@ lint:
 		exit $$status
 
 format: setup
-	poetry run black main.py
-	poetry run isort main.py
+	poetry run ruff format main.py
+	poetry run ruff check --select I --fix
 
 link:
 	if test -h ${EXT_LOC}; then make unlink; fi

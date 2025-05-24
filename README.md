@@ -7,7 +7,7 @@ Find files and directories in Ulauncher using fzf (and fd).
 ## Requirements
 
 * Ulauncher
-* Python 3.7 or higher
+* Python 3.9 or higher
 * [fzf](https://github.com/junegunn/fzf)
 * [fd](https://github.com/sharkdp/fd)
 
@@ -45,7 +45,7 @@ E.g., `make dev` or `just dev`
 
 1. (Optional) Install developer dependencies.  
     This is used to install dependencies for running `lint` and `format`.
-    It will require Python 3.7 or higher and [poetry](https://python-poetry.org/docs/).
+    It will require Python 3.9 or higher and [poetry](https://python-poetry.org/docs/).
 
     ```sh
     make setup
