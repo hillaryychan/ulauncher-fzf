@@ -57,7 +57,6 @@ ignore = [
 
     # TODO
     "PTH",
-    "S",
 ]
 
 [tool.ruff.lint.pydocstyle]

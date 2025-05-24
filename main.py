@@ -148,9 +148,9 @@ class FuzzyFinderExtension(Extension):
         logger.debug("Finding results for %s", query)
 
         fd_cmd = FuzzyFinderExtension._generate_fd_cmd(fd_bin, preferences)
-        with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:
+        with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:  # noqa: S603
             fzf_cmd = [fzf_bin, "--filter", query]
-            output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)
+            output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)  # noqa: S603
             results = output.splitlines()
 
             limit = preferences["result_limit"]
