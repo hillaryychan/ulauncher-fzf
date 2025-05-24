@@ -33,9 +33,7 @@ Actions:
 
 ## Development
 
-You can use command runners `make` or [`just`](https://github.com/casey/just)
-to run project-specific commands. Any `make` target can also be run with `just`.
-E.g., `make dev` or `just dev`
+You can use command runners `make` to run project-specific commands. E.g., `make dev`.
 
 1. Clone repository.
 
