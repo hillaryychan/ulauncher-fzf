@@ -63,7 +63,7 @@ class FuzzyFinderExtension(Extension):
         errors = []
 
         base_dir = preferences["base_dir"]
-        if not path.isdir(Path(base_dir).expanduser()):
+        if not Path(Path(base_dir).expanduser()).is_dir():
             errors.append(f"Base directory '{base_dir}' is not a directory.")
 
         ignore_file = preferences["ignore_file"]
@@ -164,7 +164,7 @@ class FuzzyFinderExtension(Extension):
 class KeywordQueryEventListener(EventListener):
     @staticmethod
     def _get_dirname(path_name: str) -> str:
-        return path_name if path.isdir(path_name) else path.dirname(path_name)
+        return path_name if Path(path_name).is_dir() else path.dirname(path_name)
 
     @staticmethod
     def _no_op_result_items(
