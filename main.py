@@ -234,7 +234,8 @@ class KeywordQueryEventListener(EventListener):
         self, event: KeywordQueryEvent, extension: FuzzyFinderExtension
     ) -> RenderResultListAction:
         bin_names, errors = extension.get_binaries()
-        errors.extend(extension.check_preferences(extension.preferences))
+        preferences = extension.get_preferences(extension.preferences)
+        errors.extend(extension.check_preferences(preferences))
         if errors:
             return KeywordQueryEventListener._no_op_result_items(errors, "error")
 
@@ -243,8 +244,6 @@ class KeywordQueryEventListener(EventListener):
             return KeywordQueryEventListener._no_op_result_items(
                 ["Enter your search criteria."]
             )
-
-        preferences = extension.get_preferences(extension.preferences)
 
         try:
             results = extension.search(query, preferences, **bin_names)
