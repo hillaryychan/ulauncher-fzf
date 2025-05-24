@@ -95,8 +95,8 @@ class FuzzyFinderExtension(Extension):
             "follow_symlinks": bool(int(input_preferences["follow_symlinks"])),
             "trim_display_path": bool(int(input_preferences["trim_display_path"])),
             "result_limit": int(input_preferences["result_limit"]),
-            "base_dir": Path(input_preferences["base_dir"]).expanduser(),
-            "ignore_file": Path(input_preferences["ignore_file"]).expanduser(),
+            "base_dir": str(Path(input_preferences["base_dir"]).expanduser()),
+            "ignore_file": str(Path(input_preferences["ignore_file"]).expanduser()),
         }
 
         logger.debug("Using user preferences %s", preferences)
