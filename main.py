@@ -96,7 +96,9 @@ class FuzzyFinderExtension(Extension):
             "trim_display_path": bool(int(input_preferences["trim_display_path"])),
             "result_limit": int(input_preferences["result_limit"]),
             "base_dir": str(Path(input_preferences["base_dir"]).expanduser()),
-            "ignore_file": str(Path(input_preferences["ignore_file"]).expanduser()),
+            "ignore_file": str(Path(input_preferences["ignore_file"]).expanduser())
+            if input_preferences["ignore_file"]
+            else None,
         }
 
         errors = FuzzyFinderExtension._validate_preferences(preferences)
