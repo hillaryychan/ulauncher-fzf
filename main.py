@@ -3,10 +3,11 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
+from dataclasses import dataclass
 from enum import Enum
 from os import path
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
@@ -36,8 +37,18 @@ class SearchType(Enum):
 
 
 BinNames = dict[str, str]
-ExtensionPreferences = dict[str, str]
-FuzzyFinderPreferences = dict[str, Any]
+
+
+@dataclass
+class FuzzyFinderPreferences:
+    alt_enter_action: AltEnterAction
+    search_type: SearchType
+    allow_hidden: bool
+    follow_symlinks: bool
+    trim_display_path: bool
+    result_limit: int
+    base_dir: Path
+    ignore_file: Path | None
 
 
 class FuzzyFinderExtension(Extension):
@@ -58,20 +69,20 @@ class FuzzyFinderExtension(Extension):
         return bin_names
 
     @staticmethod
-    def _validate_preferences(preferences: ExtensionPreferences) -> list[str]:
+    def _validate_preferences(preferences: FuzzyFinderPreferences) -> list[str]:
         logger.debug("Validating user preferences")
         errors = []
 
-        base_dir = preferences["base_dir"]
-        if not Path(Path(base_dir).expanduser()).is_dir():
+        base_dir = preferences.base_dir
+        if not base_dir.is_dir():
             errors.append(f"Base directory '{base_dir}' is not a directory.")
 
-        ignore_file = preferences["ignore_file"]
-        if ignore_file and not Path(Path(ignore_file).expanduser()).is_file():
+        ignore_file = preferences.ignore_file
+        if ignore_file and not ignore_file.is_file():
             errors.append(f"Ignore file '{ignore_file}' is not a file.")
 
         try:
-            result_limit = int(preferences["result_limit"])
+            result_limit = preferences.result_limit
             if result_limit <= 0:
                 errors.append("Result limit must be greater than 0.")
         except ValueError:
@@ -84,22 +95,20 @@ class FuzzyFinderExtension(Extension):
 
     @staticmethod
     def get_preferences(
-        input_preferences: ExtensionPreferences,
+        input_preferences: dict[str, str],
     ) -> tuple[FuzzyFinderPreferences, list[str]]:
-        preferences: FuzzyFinderPreferences = {
-            "alt_enter_action": AltEnterAction(
-                int(input_preferences["alt_enter_action"])
-            ),
-            "search_type": SearchType(int(input_preferences["search_type"])),
-            "allow_hidden": bool(int(input_preferences["allow_hidden"])),
-            "follow_symlinks": bool(int(input_preferences["follow_symlinks"])),
-            "trim_display_path": bool(int(input_preferences["trim_display_path"])),
-            "result_limit": int(input_preferences["result_limit"]),
-            "base_dir": str(Path(input_preferences["base_dir"]).expanduser()),
-            "ignore_file": str(Path(input_preferences["ignore_file"]).expanduser())
+        preferences = FuzzyFinderPreferences(
+            alt_enter_action=AltEnterAction(int(input_preferences["alt_enter_action"])),
+            search_type=SearchType(int(input_preferences["search_type"])),
+            allow_hidden=bool(int(input_preferences["allow_hidden"])),
+            follow_symlinks=bool(int(input_preferences["follow_symlinks"])),
+            trim_display_path=bool(int(input_preferences["trim_display_path"])),
+            result_limit=int(input_preferences["result_limit"]),
+            base_dir=Path(input_preferences["base_dir"]).expanduser(),
+            ignore_file=Path(input_preferences["ignore_file"]).expanduser()
             if input_preferences["ignore_file"]
             else None,
-        }
+        )
 
         errors = FuzzyFinderExtension._validate_preferences(preferences)
 
@@ -107,20 +116,20 @@ class FuzzyFinderExtension(Extension):
 
     @staticmethod
     def _generate_fd_cmd(fd_bin: str, preferences: FuzzyFinderPreferences) -> list[str]:
-        cmd = [fd_bin, ".", preferences["base_dir"]]
-        if preferences["search_type"] == SearchType.FILES:
+        cmd = [fd_bin, ".", preferences.base_dir]
+        if preferences.search_type == SearchType.FILES:
             cmd.extend(["--type", "f"])
-        elif preferences["search_type"] == SearchType.DIRS:
+        elif preferences.search_type == SearchType.DIRS:
             cmd.extend(["--type", "d"])
 
-        if preferences["allow_hidden"]:
+        if preferences.allow_hidden:
             cmd.extend(["--hidden"])
 
-        if preferences["follow_symlinks"]:
+        if preferences.follow_symlinks:
             cmd.extend(["--follow"])
 
-        if preferences["ignore_file"]:
-            cmd.extend(["--ignore-file", preferences["ignore_file"]])
+        if preferences.ignore_file:
+            cmd.extend(["--ignore-file", str(preferences.ignore_file)])
 
         return cmd
 
@@ -156,7 +165,7 @@ class FuzzyFinderExtension(Extension):
             output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)  # noqa: S603
             results = output.splitlines()
 
-            limit = preferences["result_limit"]
+            limit = preferences.result_limit
             results = results[:limit]
             logger.info("Found results: %s", results)
 
@@ -215,7 +224,7 @@ class KeywordQueryEventListener(EventListener):
         preferences: FuzzyFinderPreferences, results: list[str]
     ) -> list[ExtensionSmallResultItem]:
         path_prefix = KeywordQueryEventListener._get_path_prefix(
-            results, preferences["trim_display_path"]
+            results, preferences.trim_display_path
         )
 
         def create_result_item(path_name: str) -> ExtensionSmallResultItem:
@@ -226,7 +235,7 @@ class KeywordQueryEventListener(EventListener):
                 ),
                 on_enter=OpenAction(path_name),
                 on_alt_enter=KeywordQueryEventListener._get_alt_enter_action(
-                    preferences["alt_enter_action"], path_name
+                    preferences.alt_enter_action, path_name
                 ),
             )
 
