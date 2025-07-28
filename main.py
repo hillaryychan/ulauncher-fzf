@@ -39,6 +39,10 @@ class SearchType(Enum):
 BinNames = dict[str, str]
 
 
+def _expand_path(path: str) -> Path | None:
+    return Path(path).expanduser() if path else None
+
+
 @dataclass
 class FuzzyFinderPreferences:
     alt_enter_action: AltEnterAction
@@ -104,10 +108,9 @@ class FuzzyFinderExtension(Extension):
             follow_symlinks=bool(int(input_preferences["follow_symlinks"])),
             trim_display_path=bool(int(input_preferences["trim_display_path"])),
             result_limit=int(input_preferences["result_limit"]),
-            base_dir=Path(input_preferences["base_dir"]).expanduser(),
-            ignore_file=Path(input_preferences["ignore_file"]).expanduser()
-            if input_preferences["ignore_file"]
-            else None,
+            base_dir=_expand_path(input_preferences["base_dir"])
+            or Path("~").expanduser(),
+            ignore_file=_expand_path(input_preferences["ignore_file"]),
         )
 
         errors = FuzzyFinderExtension._validate_preferences(preferences)
