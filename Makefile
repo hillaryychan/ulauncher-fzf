@@ -6,9 +6,9 @@ setup:
 	uv sync
 
 lint-run: setup
-	uv run ruff check main.py
-	uv run ruff format --check --diff main.py
-	uv run mypy main.py
+	uv run ruff check main.py src
+	uv run ruff format --check --diff main.py src
+	uv run mypy main.py src
 
 lint:
 	-make lint-run; \
@@ -16,7 +16,7 @@ lint:
 		exit $$status
 
 format: setup
-	uv run ruff format main.py
+	uv run ruff format main.py src
 	uv run ruff check --select I --fix
 
 link:
