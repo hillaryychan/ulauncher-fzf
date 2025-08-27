@@ -6,10 +6,18 @@ import subprocess
 from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
-from ulauncher.api.shared.event import KeywordQueryEvent, PreferencesEvent
+from ulauncher.api.shared.event import (
+    KeywordQueryEvent,
+    PreferencesEvent,
+    PreferencesUpdateEvent,
+)
 
 from src.commands import get_executable
-from src.preferences import get_preferences
+from src.preferences import (
+    FuzzyFinderPreferences,
+    get_preferences,
+    validate_preferences,
+)
 from src.results import generate_no_op_result_items, generate_result_items
 from src.search import search
 
@@ -19,6 +27,7 @@ logger = logging.getLogger(__name__)
 class FuzzyFinderExtension(Extension):
     fzf_cmd: str | None
     fd_cmd: str | None
+    typed_preferences: FuzzyFinderPreferences
 
     def __init__(self) -> None:
         super().__init__()
@@ -26,20 +35,40 @@ class FuzzyFinderExtension(Extension):
         self.fd_cmd = None
 
         self.subscribe(PreferencesEvent, PreferencesEventListener())
+        self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
 
 
 class PreferencesEventListener(EventListener):
     def on_event(
-        self, _event: PreferencesEvent, extension: FuzzyFinderExtension
+        self, event: PreferencesEvent, extension: FuzzyFinderExtension
     ) -> None:
         extension.fzf_cmd = get_executable("fzf")
+        logger.debug("Using fzf command: %s", extension.fzf_cmd)
+
         extension.fd_cmd = get_executable("fd")
         if extension.fd_cmd is None:
             extension.fd_cmd = get_executable("fdfind")
-
-        logger.debug("Using fzf command: %s", extension.fzf_cmd)
         logger.debug("Using fd command: %s", extension.fd_cmd)
+
+        extension.typed_preferences = get_preferences(event.preferences)
+        logger.debug("Using preferences: %s", extension.typed_preferences)
+
+
+class PreferencesUpdateEventListener(EventListener):
+    def on_event(
+        self, event: PreferencesUpdateEvent, extension: FuzzyFinderExtension
+    ) -> None:
+        logger.debug(
+            "Updating preference %s from %s to %s",
+            event.id,
+            event.old_value,
+            event.new_value,
+        )
+        preferences = extension.preferences
+        preferences[event.id] = event.new_value
+        extension.typed_preferences = get_preferences(preferences)
+        logger.debug("Using preferences: %s", extension.typed_preferences)
 
 
 class KeywordQueryEventListener(EventListener):
@@ -54,11 +83,9 @@ class KeywordQueryEventListener(EventListener):
                 errors.append("Missing dependency fd. Please install fd.")
             return generate_no_op_result_items(errors, "error")
 
-        preferences, pref_errors = get_preferences(extension.preferences)
+        pref_errors = validate_preferences(extension.typed_preferences)
         if pref_errors:
             return generate_no_op_result_items(pref_errors, "error")
-
-        logger.debug("Using user preferences %s", preferences)
 
         query = event.get_argument()
         if not query:
@@ -68,7 +95,7 @@ class KeywordQueryEventListener(EventListener):
             results = search(
                 fzf_cmd=extension.fzf_cmd,
                 fd_cmd=extension.fd_cmd,
-                preferences=preferences,
+                preferences=extension.typed_preferences,
                 query=query,
             )
         except subprocess.CalledProcessError as error:
@@ -82,7 +109,7 @@ class KeywordQueryEventListener(EventListener):
             return generate_no_op_result_items(
                 ["There was an error running this extension."], "error"
             )
-        items = generate_result_items(preferences, results)
+        items = generate_result_items(extension.typed_preferences, results)
         return RenderResultListAction(items)
 
 

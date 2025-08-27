@@ -25,7 +25,22 @@ def _expand_path(path: str) -> Path | None:
     return Path(path).expanduser() if path else None
 
 
-def _validate_preferences(preferences: FuzzyFinderPreferences) -> list[str]:
+def get_preferences(
+    input_preferences: dict[str, str],
+) -> FuzzyFinderPreferences:
+    return FuzzyFinderPreferences(
+        alt_enter_action=AltEnterAction(int(input_preferences["alt_enter_action"])),
+        search_type=SearchType(int(input_preferences["search_type"])),
+        allow_hidden=bool(int(input_preferences["allow_hidden"])),
+        follow_symlinks=bool(int(input_preferences["follow_symlinks"])),
+        trim_display_path=bool(int(input_preferences["trim_display_path"])),
+        result_limit=int(input_preferences["result_limit"]),
+        base_dir=_expand_path(input_preferences["base_dir"]) or Path("~").expanduser(),
+        ignore_file=_expand_path(input_preferences["ignore_file"]),
+    )
+
+
+def validate_preferences(preferences: FuzzyFinderPreferences) -> list[str]:
     logger.debug("Validating user preferences")
     errors = []
 
@@ -48,22 +63,3 @@ def _validate_preferences(preferences: FuzzyFinderPreferences) -> list[str]:
         logger.debug("User preferences validated")
 
     return errors
-
-
-def get_preferences(
-    input_preferences: dict[str, str],
-) -> tuple[FuzzyFinderPreferences, list[str]]:
-    preferences = FuzzyFinderPreferences(
-        alt_enter_action=AltEnterAction(int(input_preferences["alt_enter_action"])),
-        search_type=SearchType(int(input_preferences["search_type"])),
-        allow_hidden=bool(int(input_preferences["allow_hidden"])),
-        follow_symlinks=bool(int(input_preferences["follow_symlinks"])),
-        trim_display_path=bool(int(input_preferences["trim_display_path"])),
-        result_limit=int(input_preferences["result_limit"]),
-        base_dir=_expand_path(input_preferences["base_dir"]) or Path("~").expanduser(),
-        ignore_file=_expand_path(input_preferences["ignore_file"]),
-    )
-
-    errors = _validate_preferences(preferences)
-
-    return preferences, errors
