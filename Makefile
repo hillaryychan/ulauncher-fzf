@@ -5,15 +5,10 @@ EXT_DIR  := $(shell pwd)
 setup:
 	uv sync
 
-lint-run: setup
+lint: setup
 	uv run ruff check .
 	uv run ruff format --check --diff .
 	uv run mypy .
-
-lint:
-	-make lint-run; \
-		status=$$?; \
-		exit $$status
 
 format: setup
 	uv run ruff format .
