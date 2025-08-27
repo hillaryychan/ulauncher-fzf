@@ -27,14 +27,16 @@ def _generate_fd_cmd(fd_bin: str, preferences: FuzzyFinderPreferences) -> list[s
 
 
 def search(
-    query: str, preferences: FuzzyFinderPreferences, fd_bin: str, fzf_bin: str
+    fzf_cmd: str, fd_cmd: str, preferences: FuzzyFinderPreferences, query: str
 ) -> list[str]:
     logger.debug("Finding results for %s", query)
 
-    fd_cmd = _generate_fd_cmd(fd_bin, preferences)
-    with subprocess.Popen(fd_cmd, stdout=subprocess.PIPE) as fd_proc:  # noqa: S603
-        fzf_cmd = [fzf_bin, "--filter", query]
-        output = subprocess.check_output(fzf_cmd, stdin=fd_proc.stdout, text=True)  # noqa: S603
+    fd_invocation = _generate_fd_cmd(fd_cmd, preferences)
+    with subprocess.Popen(fd_invocation, stdout=subprocess.PIPE) as fd_proc:  # noqa: S603
+        fzf_invocation = [fzf_cmd, "--filter", query]
+        output = subprocess.check_output(  # noqa: S603
+            fzf_invocation, stdin=fd_proc.stdout, text=True
+        )
         results = output.splitlines()
 
         limit = preferences.result_limit
