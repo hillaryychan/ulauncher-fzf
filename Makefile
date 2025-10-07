@@ -6,9 +6,7 @@ setup:
 	uv sync
 
 lint: setup
-	uv run ruff check .
-	uv run ruff format --check --diff .
-	uv run mypy .
+	uv run pre-commit run --all-files
 
 format: setup
 	uv run ruff format .
