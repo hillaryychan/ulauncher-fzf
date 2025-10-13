@@ -5,13 +5,28 @@ EXT_DIR  := $(shell pwd)
 setup:
 	uv sync
 
-lint: setup
+ci-setup:
+	uv sync --frozen
+
+# --- Lint & format ---
+lint:
 	uv run pre-commit run --all-files
 
-format: setup
+format:
 	uv run ruff format .
 	uv run ruff check --select I --fix
 
+# --- Tests ---
+test:
+	uv run pytest
+
+# --- CI targets ---
+ci-lint: ci-setup lint
+ci-test: ci-setup test
+
+ci: ci-lint ci-test
+
+# --- Dev utilities ---
 link:
 	if test -h ${EXT_LOC}; then make unlink; fi
 	ln -s ${EXT_DIR} ${EXT_LOC}
