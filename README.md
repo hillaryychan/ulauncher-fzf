@@ -7,7 +7,7 @@ Find files and directories in Ulauncher using fzf (and fd).
 ## Requirements
 
 * Ulauncher
-* Python 3.9 or higher
+* Python 3.10 or higher
 * [fzf](https://github.com/junegunn/fzf)
 * [fd](https://github.com/sharkdp/fd)
 
@@ -43,7 +43,7 @@ You can use command runners `make` to run project-specific commands. E.g., `make
 
 1. (Optional) Install developer dependencies.  
     This is used to install dependencies for running `lint` and `format`.
-    It will require Python 3.9 or higher and [uv](https://docs.astral.sh/uv/).
+    It will require Python 3.10 or higher and [uv](https://docs.astral.sh/uv/).
 
     ```sh
     make setup
