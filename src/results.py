@@ -10,7 +10,6 @@ from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 from ulauncher.api.shared.action.OpenAction import OpenAction
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
-from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallResultItem
 
 from src.enums import AltEnterAction
 
@@ -47,7 +46,12 @@ def _get_path_prefix(results: list[str], trim_path: bool) -> str | None:  # noqa
     return path_prefix
 
 
-def _get_display_name(path_name: str, path_prefix: str | None = None) -> str:
+def _get_display_name(path_name: str) -> str:
+    display_path = Path(path_name)
+    return display_path.stem
+
+
+def _get_display_description(path_name: str, path_prefix: str | None = None) -> str:
     display_path = path_name
     if path_prefix is not None:
         display_path = path_name.replace(path_prefix, "...")
@@ -56,13 +60,14 @@ def _get_display_name(path_name: str, path_prefix: str | None = None) -> str:
 
 def generate_result_items(
     preferences: FuzzyFinderPreferences, results: list[str]
-) -> list[ExtensionSmallResultItem]:
+) -> list[ExtensionResultItem]:
     path_prefix = _get_path_prefix(results, preferences.trim_display_path)
 
-    def create_result_item(path_name: str) -> ExtensionSmallResultItem:
-        return ExtensionSmallResultItem(
+    def create_result_item(path_name: str) -> ExtensionResultItem:
+        return ExtensionResultItem(
             icon="images/sub-icon.png",
-            name=_get_display_name(path_name, path_prefix),
+            name=_get_display_name(path_name),
+            description=_get_display_description(path_name, path_prefix),
             on_enter=OpenAction(path_name),
             on_alt_enter=_get_alt_enter_action(preferences.alt_enter_action, path_name),
         )
