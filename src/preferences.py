@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.enums import AltEnterAction, SearchType
+from src.enums import AltEnterAction, ResultAppearance, SearchType
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +15,7 @@ class FuzzyFinderPreferences:
     search_type: SearchType
     allow_hidden: bool
     follow_symlinks: bool
+    result_appearance: ResultAppearance
     trim_display_path: bool
     result_limit: int
     base_dir: Path
@@ -33,6 +34,7 @@ def get_preferences(
         search_type=SearchType(int(input_preferences["search_type"])),
         allow_hidden=bool(int(input_preferences["allow_hidden"])),
         follow_symlinks=bool(int(input_preferences["follow_symlinks"])),
+        result_appearance=ResultAppearance(int(input_preferences["result_appearance"])),
         trim_display_path=bool(int(input_preferences["trim_display_path"])),
         result_limit=int(input_preferences["result_limit"]),
         base_dir=_expand_path(input_preferences["base_dir"]) or Path("~").expanduser(),

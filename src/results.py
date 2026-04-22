@@ -12,7 +12,7 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallResultItem
 
-from src.enums import AltEnterAction
+from src.enums import AltEnterAction, ResultAppearance
 
 if TYPE_CHECKING:
     from ulauncher.api.shared.action.BaseAction import BaseAction
@@ -47,7 +47,11 @@ def _get_path_prefix(results: list[str], trim_path: bool) -> str | None:  # noqa
     return path_prefix
 
 
-def _get_display_name(path_name: str, path_prefix: str | None = None) -> str:
+def _get_path_stem(path_name: str) -> str:
+    return Path(path_name).stem
+
+
+def _get_display_path(path_name: str, path_prefix: str | None = None) -> str:
     display_path = path_name
     if path_prefix is not None:
         display_path = path_name.replace(path_prefix, "...")
@@ -60,12 +64,26 @@ def generate_result_items(
     path_prefix = _get_path_prefix(results, preferences.trim_display_path)
 
     def create_result_item(path_name: str) -> ExtensionSmallResultItem:
-        return ExtensionSmallResultItem(
-            icon="images/sub-icon.png",
-            name=_get_display_name(path_name, path_prefix),
-            on_enter=OpenAction(path_name),
-            on_alt_enter=_get_alt_enter_action(preferences.alt_enter_action, path_name),
-        )
+        match preferences.result_appearance:
+            case ResultAppearance.COMPACT:
+                return ExtensionSmallResultItem(
+                    icon="images/sub-icon.png",
+                    name=_get_display_path(path_name, path_prefix),
+                    on_enter=OpenAction(path_name),
+                    on_alt_enter=_get_alt_enter_action(
+                        preferences.alt_enter_action, path_name
+                    ),
+                )
+            case ResultAppearance.COMFORTABLE:
+                return ExtensionResultItem(
+                    icon="images/sub-icon.png",
+                    name=_get_path_stem(path_name),
+                    description=_get_display_path(path_name, path_prefix),
+                    on_enter=OpenAction(path_name),
+                    on_alt_enter=_get_alt_enter_action(
+                        preferences.alt_enter_action, path_name
+                    ),
+                )
 
     return list(map(create_result_item, results))
 
