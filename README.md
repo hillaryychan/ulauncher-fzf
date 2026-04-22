@@ -2,7 +2,10 @@
 
 Find files and directories in Ulauncher using fzf (and fd).
 
-![ulauncher-fzf preview](https://user-images.githubusercontent.com/44228565/148923401-e8268ef5-974f-4912-8b65-e1704159bfc2.png)
+
+| Compact View                                              | Comfortable View                                                  |
+| ---                                                       | ---                                                               |
+| ![demo compact view](./docs/images/demo-compact-view.png) | ![demo comfortable view](./docs/images/demo-comfortable-view.png) |
 
 ## Requirements
 
