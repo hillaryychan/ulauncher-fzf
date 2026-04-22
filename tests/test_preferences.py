@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.enums import AltEnterAction, SearchType
+from src.enums import AltEnterAction, ResultAppearance, SearchType
 from src.preferences import (
     FuzzyFinderPreferences,
     get_preferences,
@@ -47,6 +47,7 @@ class TestGetPreferences:
             "search_type": SearchType.BOTH.value,
             "allow_hidden": 0,
             "follow_symlinks": 0,
+            "result_appearance": 0,
             "trim_display_path": 0,
             "result_limit": result_limit
             if result_limit is not None
@@ -65,6 +66,7 @@ class TestGetPreferences:
         assert result.search_type == SearchType.BOTH
         assert result.allow_hidden is False
         assert result.follow_symlinks is False
+        assert result.result_appearance == ResultAppearance.COMPACT
         assert result.trim_display_path is False
         assert result.result_limit == self.default_result_limit
         assert isinstance(result.base_dir, Path)
@@ -126,6 +128,7 @@ class TestValidatePreferences:
             search_type=SearchType.BOTH,
             allow_hidden=False,
             follow_symlinks=False,
+            result_appearance=ResultAppearance.COMPACT,
             trim_display_path=False,
             result_limit=result_limit if result_limit is not None else 15,
             base_dir=self.mock_base_dir,

@@ -87,6 +87,23 @@
       ]
     },
     {
+      "id": "result_appearance",
+      "type": "select",
+      "name": "Result appearance",
+      "description": "The size in which results should be displayed",
+      "default_value": 0,
+      "options": [
+        {
+          "text": "Compact",
+          "value": 0
+        },
+        {
+          "text": "Comfortable",
+          "value": 1
+        }
+      ]
+    },
+    {
       "id": "trim_display_path",
       "type": "select",
       "name": "Trim displayed path name",
