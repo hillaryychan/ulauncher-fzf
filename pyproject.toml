@@ -12,7 +12,7 @@ dev = [
     "pre-commit>=4.6.1",
     "pytest>=9.1.1",
     "pytest-mock>=3.14.1",
-    "ruff>=0.16.0",
+    "ruff>=0.16.3",
 ]
 
 [tool.uv]
