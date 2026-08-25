@@ -25,3 +25,5 @@ repos:
         entry: mypy
         language: system
         types: [python]
+        args:
+          - --no-sqlite-cache
